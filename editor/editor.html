@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Annotate</title>
+    <link rel="stylesheet" href="../index.css" />
+    <link rel="stylesheet" href="editor.css" />
+  </head>
+  <body>
+    <div id="toolbar">
+      <h1 class="header_title">Annotate</h1>
+
+      <div class="toolbar_actions">
+        <div class="shape-selector_container">
+          <select id="shape-selector_menu">
+            <option value="text">Text</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="arrow">Arrow</option>
+          </select>
+          <button id="shape-selector_btn">Add Shape</button>
+        </div>
+
+        <div class="export_controls">
+          <input
+            type="text"
+            id="filename-input"
+            placeholder="Enter file name here"
+          />
+          <button id="export-btn">Export</button>
+        </div>
+      </div>
+    </div>
+    <canvas id="c"></canvas>
+
+    <!-- JS -->
+    <script src="../lib/fabricjs/index.js"></script>
+    <script src="editor.js"></script>
+  </body>
+</html>

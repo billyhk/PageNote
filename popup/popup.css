@@ -14,16 +14,6 @@ p {
   text-align: center;
 }
 
-.header_title {
-  font-size: 30px;
-  background: linear-gradient(45deg, #0077ff, #00bfff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  cursor: default;
-  font-weight: 600;
-}
-
 .header_subtitle {
   font-size: 16px;
 }

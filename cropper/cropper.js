@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Cleanup localStorage
+  chrome.storage.local.remove("annotatedImage");
+
   chrome.storage.local.get("screenshot", function (data) {
     const img = document.getElementById("screenshot-img");
     img.src = data.screenshot;
@@ -9,18 +12,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("crop-btn").addEventListener("click", function () {
       const croppedCanvas = cropper.getCroppedCanvas();
-      // Handle the cropped image: save, download, etc.
+
       croppedCanvas.toBlob(function (blob) {
-        // Example: Download the cropped image
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "cropped_image.png";
-        document.body.appendChild(a); // Append to body temporarily
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+        blobToDataUrl(blob, function (dataUrl) {
+          chrome.storage.local.set({ annotatedImage: dataUrl }, function () {
+            chrome.tabs.update({
+              url: chrome.runtime.getURL("../editor/editor.html"),
+            });
+          });
+        });
       });
     });
   });
 });
+
+function blobToDataUrl(blob, callback) {
+  const reader = new FileReader();
+  reader.onload = function () {
+    callback(reader.result);
+  };
+  reader.readAsDataURL(blob);
+}

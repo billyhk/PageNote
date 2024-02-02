@@ -1,5 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
+.header_title {
+  font-size: 30px;
+  background: linear-gradient(45deg, #0077ff, #00bfff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  cursor: default;
+  font-weight: 600;
+}
+
 #capture-btn,
 #crop-btn {
   cursor: pointer;

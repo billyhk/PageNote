@@ -1,0 +1,10 @@
+body {
+  background-color: #ccc;
+}
+
+.toolbar_actions {
+  display: flex;
+  gap: 4rem;
+
+  margin-bottom: 1rem;
+}
