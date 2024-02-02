@@ -1,10 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
 body {
+  font-family: "Poppins";
   width: 200px;
   padding: 10px;
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+  background: linear-gradient(to bottom, #f0f0f0, #d1d1d1);
 }
 
-button {
-  width: 100%;
-  padding: 5px;
-  margin-top: 10px;
+h1,
+p {
+  margin: 0;
+  text-align: center;
+}
+
+.header_title {
+  font-size: 30px;
+  background: linear-gradient(45deg, #0077ff, #00bfff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  cursor: default;
+  font-weight: 600;
+}
+
+.header_subtitle {
+  font-size: 16px;
+}
+
+.header_icon {
+  width: 75px;
+}
+
+#capture-btn {
+  cursor: pointer;
+  font-size: 18px;
+  background: linear-gradient(145deg, #006be6, #007fff);
+  color: white;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s;
+}
+
+#capture-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+#capture-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }

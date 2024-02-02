@@ -3,7 +3,7 @@
   "name": "PageMark: Screenshot & Annotate",
   "version": "0.1",
   "description": "Capture and annotate webpages with ease.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "tabs", "<all_urls>"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
