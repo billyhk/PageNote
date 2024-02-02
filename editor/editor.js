@@ -108,11 +108,15 @@ function addRectangle(canvas) {
   var rect = new fabric.Rect({
     left: 100,
     top: 100,
-    fill: "transparent",
-    stroke: "red",
     width: 60,
     height: 70,
-    angle: 90,
+    fill: "",
+
+    // Border styles
+    stroke: "red",
+    strokeWidth: 2,
+    noScaleCache: false,
+    strokeUniform: true,
   });
 
   canvas.add(rect);
