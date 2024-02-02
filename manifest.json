@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "PageMark: Screenshot & Annotate",
+  "version": "0.1",
+  "description": "Capture and annotate webpages with ease.",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "images/icon.png",
+      "48": "images/icon.png",
+      "128": "images/icon.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "images/icon.png",
+    "48": "images/icon.png",
+    "128": "images/icon.png"
+  }
+}
