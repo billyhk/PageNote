@@ -3,9 +3,9 @@
   "name": "PageMark: Screenshot & Annotate",
   "version": "0.1",
   "description": "Capture and annotate webpages with ease.",
-  "permissions": ["activeTab", "tabs", "<all_urls>"],
+  "permissions": ["activeTab", "tabs", "<all_urls>", "storage"],
   "action": {
-    "default_popup": "popup/popup.html",
+    "default_popup": "/popup/popup.html",
     "default_icon": {
       "16": "images/icon.png",
       "48": "images/icon.png",
@@ -19,6 +19,12 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/cropper.css", "lib/cropper.js"],
+      "matches": ["<all_urls>"]
     }
   ],
   "icons": {
