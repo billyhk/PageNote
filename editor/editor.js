@@ -3,6 +3,13 @@ const PROJECT_NAME = "PageMark";
 const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
 const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
+const MAX_IMG_WIDTH = 1100;
+const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
+  mt: false, // middle top disable
+  mb: false, // middle bottom disable
+  ml: false, // middle left disable
+  mr: false, // middle right disable
+};
 
 // Elements
 const shapeSelectorMenu = document.getElementById("shape-selector_menu");
@@ -86,18 +93,19 @@ function setCroppedImageAndUrlToBackground(canvas) {
     const croppedImage = data[CROPPED_IMAGE_STORAGE_KEY];
     if (croppedImage) {
       fabric.Image.fromURL(croppedImage, function (img) {
-        setCanvasSize(canvas, img);
-        addUrlToCanvas(canvas, img.width);
-        addCroppedImageToCanvas(canvas, img);
+        const imgSize = addCroppedImageToCanvas(canvas, img);
+        setCanvasSize(canvas, imgSize);
+        addUrlToCanvas(canvas, imgSize.width);
       });
     }
   });
 }
 
-function setCanvasSize(canvas, img) {
-  if (img) {
-    canvas.setWidth(img.width);
-    canvas.setHeight(img.height);
+function setCanvasSize(canvas, imgSize) {
+  if (imgSize) {
+    console.log(imgSize);
+    canvas.setWidth(imgSize.width);
+    canvas.setHeight(imgSize.height);
     return;
   }
 
@@ -108,8 +116,8 @@ function setCanvasSize(canvas, img) {
 function addUrlToCanvas(canvas, imgWidth) {
   chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
     var url = result[SCREENSHOT_URL_STORAGE_KEY];
-
-    var borderHeight = 30; // Adjust as needed
+    var padding = 7;
+    var borderHeight = 30;
     var borderWidth = imgWidth ?? canvas.width;
     var border = new fabric.Rect({
       id: objectId++,
@@ -128,9 +136,10 @@ function addUrlToCanvas(canvas, imgWidth) {
       id: objectId++,
       [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
 
-      left: 10, // Some padding
-      top: 5, // Adjust based on border height
+      left: padding,
+      top: padding,
       fontSize: 14,
+      fontFamily: "Arial",
       fill: "white",
       selectable: false,
       evented: false,
@@ -156,6 +165,24 @@ function addUrlToCanvas(canvas, imgWidth) {
 }
 
 function addCroppedImageToCanvas(canvas, img) {
+  let scaledHeight;
+  let scaledWidth;
+
+  if (img.width > MAX_IMG_WIDTH) {
+    // Preserve Aspect Ratio
+    const aspectRatio = img.height / img.width;
+    scaledWidth = MAX_IMG_WIDTH;
+    scaledHeight = scaledWidth * aspectRatio;
+
+    // Set the image size to the new dimensions
+    img.scaleToWidth(scaledWidth);
+    img.scaleToHeight(scaledHeight);
+  } else {
+    // No scaling needed; use original dimensions
+    scaledHeight = img.height;
+    scaledWidth = img.width;
+  }
+
   img.set({
     selectable: false, // Make it non-selectable
     evented: false, // Make it non-interactive
@@ -167,6 +194,8 @@ function addCroppedImageToCanvas(canvas, img) {
   canvas.add(img);
   canvas.sendToBack(img);
   canvas.renderAll();
+
+  return { height: scaledHeight, width: scaledWidth };
 }
 
 // SHAPES
@@ -275,6 +304,8 @@ function addArrowHead(canvas, line) {
 
   canvas.remove(line);
   canvas.remove(arrowHead);
+
+  group.setControlsVisibility(VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT);
   canvas.add(group);
 }
 
@@ -329,15 +360,7 @@ function addText(canvas) {
     fontSize: 28,
     customType: "Text",
   });
-
-  // Disable non-corner controls to hide the ability to scale without preserving aspect-ratio
-  text.setControlsVisibility({
-    mt: false, // middle top disable
-    mb: false, // middle bottom disable
-    ml: false, // middle left disable
-    mr: false, // middle right disable
-  });
-
+  text.setControlsVisibility(VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT);
   canvas.add(text);
 }
 
