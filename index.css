@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
+body {
+  background: linear-gradient(to bottom, #f0f0f0, #d1d1d1);
+}
+
 .header_title {
   font-size: 30px;
   background: linear-gradient(45deg, #0077ff, #00bfff);

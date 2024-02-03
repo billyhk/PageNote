@@ -1,5 +1,5 @@
 body {
-  background-color: #ccc;
+  min-height: 100vh;
 }
 
 .toolbar_actions {
