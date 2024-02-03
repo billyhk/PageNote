@@ -12,15 +12,6 @@
 
       <!-- toolbar header -->
       <div class="toolbar_actions">
-        <div class="shape-selector_container">
-          <select id="shape-selector_menu">
-            <option value="rectangle">Rectangle</option>
-            <option value="arrow">Arrow</option>
-            <option value="text">Text</option>
-          </select>
-          <button id="shape-selector_btn">Add Shape</button>
-        </div>
-
         <div class="export_controls">
           <input
             type="text"
@@ -29,6 +20,14 @@
           />
           <button id="export-btn">Export</button>
         </div>
+        <div class="shape-selector_container">
+          <select id="shape-selector_menu">
+            <option value="arrow">Arrow</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="text">Text</option>
+          </select>
+          <button id="shape-selector_btn">Add Shape</button>
+        </div>
       </div>
     </div>
 
@@ -36,21 +35,30 @@
       <div class="side-panels-container">
         <!-- layers panel -->
         <aside id="layers-panel">
-          <h2>
-            Layers
+          <div class="panel-header">
+            <h2>Layers</h2>
+
             <img
               id="drawing-enabled-indicator"
               title="Drawing Enabled"
               src="../images/edit-icon.png"
             />
-          </h2>
+
+            <select id="color-selector">
+              <option value="red">Red</option>
+              <option value="black">Black</option>
+              <option value="white">White</option>
+              <option value="blue">Blue</option>
+              <option value="green">Green</option>
+            </select>
+          </div>
 
           <ul id="layers-list"></ul>
         </aside>
 
         <!-- Notes -->
         <aside id="notes-panel">
-          <h2>Notes</h2>
+          <h2 class="panel-header">Notes</h2>
           <textarea
             id="notes-input"
             rows="10"

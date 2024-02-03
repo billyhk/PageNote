@@ -10,6 +10,11 @@ const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
   ml: false, // middle left disable
   mr: false, // middle right disable
 };
+const CUSTOM_TYPES = {
+  ARROW: "Arrow",
+  RECTANGLE: "Rectangle",
+  TEXT: "Text",
+};
 
 // Elements
 const shapeSelectorMenu = document.getElementById("shape-selector_menu");
@@ -19,6 +24,7 @@ const fileNameInput = document.getElementById("filename-input");
 const layersList = document.getElementById("layers-list");
 const notesInput = document.getElementById("notes-input");
 const drawingIndicator = document.getElementById("drawing-enabled-indicator");
+const colorSelector = document.getElementById("color-selector");
 
 // Dynamic variables
 let objectId = 0;
@@ -38,10 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // INITIALIZE CANVAS
 
 function initializeElementListeners(canvas) {
-  shapeSelectorButton.addEventListener("click", function () {
-    addShape(shapeSelectorMenu.value, canvas);
-  });
-
   document.addEventListener("keydown", function (event) {
     if (event.key === "Backspace" || event.key === "Delete") {
       if (!canvas.getActiveObject()?.isEditing) {
@@ -52,6 +54,15 @@ function initializeElementListeners(canvas) {
     }
   });
 
+  shapeSelectorButton.addEventListener("click", function () {
+    addShape(shapeSelectorMenu.value, canvas);
+  });
+
+  colorSelector.addEventListener("change", function (e) {
+    const selectedColor = e.target.value;
+    applyColorToSelection(canvas, selectedColor);
+  });
+
   exportButton.addEventListener("click", function () {
     const filename = setFilename();
     const notesText = notesInput.value.trim();
@@ -60,7 +71,6 @@ function initializeElementListeners(canvas) {
       notesText
     );
     const dataURL = canvas.toDataURL("image/png");
-
     restoreCanvasAfterExport(canvas, extraNodesAndRestorationData);
     createAndTriggerAnchor(dataURL, filename);
   });
@@ -76,14 +86,17 @@ function initializeCanvasListeners(canvas) {
   });
 
   canvas.on("selection:created", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
+    updateColorSelectorVisibility(canvas);
+    highlightActiveObjectInLayersList(e.selected);
   });
 
   canvas.on("selection:updated", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
+    updateColorSelectorVisibility(canvas);
+    highlightActiveObjectInLayersList(e.selected);
   });
 
   canvas.on("selection:cleared", function () {
+    updateColorSelectorVisibility(canvas);
     clearHighlighting();
   });
 }
@@ -243,7 +256,7 @@ function enableRectangleDrawing(canvas) {
       noScaleCache: false,
       strokeUniform: true,
       id: objectId++,
-      customType: "Rectangle",
+      customType: CUSTOM_TYPES.RECTANGLE,
     });
 
     canvas.add(rect);
@@ -298,7 +311,7 @@ function addArrowHead(canvas, line) {
   // Group the line and arrowhead for easier manipulation
   const group = new fabric.Group([line, arrowHead], {
     id: objectId++,
-    customType: "Arrow",
+    customType: CUSTOM_TYPES.ARROW,
   });
 
   canvas.remove(line);
@@ -357,7 +370,7 @@ function addText(canvas) {
     fill: "red",
     lineHeight: 1.1,
     fontSize: 28,
-    customType: "Text",
+    customType: CUSTOM_TYPES.TEXT,
   });
   text.setControlsVisibility(VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT);
   canvas.add(text);
@@ -377,6 +390,53 @@ function disableDrawing(canvas) {
   canvas.off("mouse:down");
   canvas.off("mouse:move");
   canvas.off("mouse:up");
+}
+
+function applyColorToSelection(canvas, selectedColor) {
+  const activeObject = canvas.getActiveObject();
+  if (!activeObject) return;
+
+  if (activeObject.type === "activeSelection") {
+    // Apply color change to each object in the group
+    activeObject.forEachObject((obj) => {
+      setUpdatedArrowColorProperties(obj, selectedColor);
+      updateActiveObjectColorProperties(obj, selectedColor);
+    });
+    canvas.requestRenderAll();
+    return;
+  }
+
+  setUpdatedArrowColorProperties(activeObject, selectedColor);
+  updateActiveObjectColorProperties(activeObject, selectedColor);
+  canvas.requestRenderAll();
+}
+
+function setUpdatedArrowColorProperties(activeObject, selectedColor) {
+  if (activeObject.customType === CUSTOM_TYPES.ARROW) {
+    activeObject._objects.forEach((obj) => {
+      if (obj.type === "line") {
+        obj.set({ fill: selectedColor, stroke: selectedColor });
+      }
+      if (obj.type === "triangle") {
+        obj.set({ fill: selectedColor, stroke: selectedColor });
+      }
+    });
+  }
+}
+
+function updateActiveObjectColorProperties(activeObject, selectedColor) {
+  // Persist transparent fill if intended
+  const fillOrStroke =
+    activeObject.fill === ""
+      ? { stroke: selectedColor }
+      : { fill: selectedColor };
+
+  activeObject.set(fillOrStroke);
+}
+
+function updateColorSelectorVisibility(canvas) {
+  const activeObject = canvas.getActiveObject();
+  colorSelector.style.display = activeObject ? "block" : "none";
 }
 
 function getFormattedDate(date) {
@@ -425,6 +485,7 @@ function updateLayersList(canvas) {
     li.textContent = `${objType} ${typeCount[objType]}`;
     li.onclick = function () {
       canvas.setActiveObject(obj); // Set the clicked object as active
+      highlightActiveObjectInLayersList([obj]);
       canvas.renderAll();
     };
 
@@ -446,15 +507,17 @@ function removeActiveObject(canvas, shouldRemove = true) {
   }
 }
 
-function highlightActiveObjectInLayersList(activeObject) {
+function highlightActiveObjectInLayersList(activeObjects) {
   clearHighlighting();
-  var activeId = activeObject.id;
-  var listItem = document.querySelector(
-    `#layers-list li[data-id="${activeId}"]`
-  );
-  if (listItem) {
-    listItem.classList.add("active");
-  }
+
+  activeObjects.forEach((obj) => {
+    const listItem = document.querySelector(
+      `#layers-list li[data-id="${obj.id}"]`
+    );
+    if (listItem) {
+      listItem.classList.add("active");
+    }
+  });
 }
 
 function clearHighlighting() {
