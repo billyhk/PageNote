@@ -2,26 +2,42 @@ body {
   min-height: 100vh;
 }
 
-.toolbar_actions {
-  display: flex;
-  gap: 4rem;
-  margin-bottom: 1rem;
+h2 {
+  border-bottom: 1px solid black;
+}
+
+h2,
+ul {
+  margin: 0;
 }
 
 .canvas-container {
   display: flex;
-  border: 1px solid green;
+}
+
+.side-panels-container {
+  display: flex;
+  border: 1px solid #aaa;
+}
+
+/* TOOLBAR  */
+.toolbar_actions {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  margin-bottom: 1rem;
+}
+
+#drawing-enabled-indicator {
+  display: none;
+  width: 14px;
 }
 
 /* LAYERS PANEL */
 #layers-panel {
   margin: 0;
   min-width: 150px;
-}
-
-#layers-panel h2 {
-  margin: 0;
-  border-bottom: 1px solid black;
+  background-color: #f5feff;
 }
 
 #layers-list {
@@ -29,11 +45,15 @@ body {
   padding: 0;
 }
 
+#layers-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 #layers-list li {
   cursor: pointer;
   padding: 5px;
-  border: 1px solid #ccc;
-  margin-bottom: 5px;
 }
 
 #layers-list li:hover {
@@ -45,11 +65,11 @@ body {
   color: white;
 }
 
-/* NOTES FIELD */
+/* NOTES PANEL */
 #notes-panel {
-  min-width: 300px;
-  border: 1px solid blue;
-  padding: 10px;
+  min-width: 200px;
+  background-color: #ccc;
+  padding-right: 5px;
 }
 
 #notes-input {

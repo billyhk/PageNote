@@ -11,6 +11,7 @@ const exportButton = document.getElementById("export-btn");
 const fileNameInput = document.getElementById("filename-input");
 const layersList = document.getElementById("layers-list");
 const notesInput = document.getElementById("notes-input");
+const drawingIndicator = document.getElementById("drawing-enabled-indicator");
 
 // Dynamic variables
 let objectId = 0;
@@ -30,10 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // INITIALIZE CANVAS
 
 function initializeElementListeners(canvas) {
-  shapeSelectorMenu.addEventListener("change", function (e) {
-    addShape(e.target.value, canvas);
-  });
-
   shapeSelectorButton.addEventListener("click", function () {
     addShape(shapeSelectorMenu.value, canvas);
   });
@@ -177,10 +174,10 @@ function addCroppedImageToCanvas(canvas, img) {
 function addShape(selectedShape, canvas) {
   switch (selectedShape) {
     case "rectangle":
-      addRectangle(canvas);
+      enableRectangleDrawing(canvas);
       break;
     case "arrow":
-      addArrow(canvas);
+      enableArrowDrawing(canvas);
       break;
     case "text":
       addText(canvas);
@@ -190,56 +187,136 @@ function addShape(selectedShape, canvas) {
   }
 }
 
-function addRectangle(canvas) {
-  var rect = new fabric.Rect({
-    id: objectId++,
-    left: 100,
-    top: 100,
-    width: 60,
-    height: 70,
-    fill: "",
+// SHAPE: RECTANGLE
 
-    // Border styles
-    stroke: "red",
-    strokeWidth: 2,
-    noScaleCache: false,
-    strokeUniform: true,
+function enableRectangleDrawing(canvas) {
+  enableDrawing(canvas);
 
-    customType: "Rectangle",
+  let isDrawing = false;
+  let originX, originY;
+  let rect;
+
+  canvas.on("mouse:down", function (o) {
+    isDrawing = true;
+    const pointer = canvas.getPointer(o.e);
+    originX = pointer.x;
+    originY = pointer.y;
+
+    rect = new fabric.Rect({
+      left: originX,
+      top: originY,
+      originX: "left",
+      originY: "top",
+      width: 1, // Initial small width to avoid errors
+      height: 1, // Initial small height to avoid errors
+      stroke: "red",
+      strokeWidth: 2,
+      fill: "",
+      noScaleCache: false,
+      strokeUniform: true,
+      id: objectId++,
+      customType: "Rectangle",
+    });
+
+    canvas.add(rect);
   });
 
-  canvas.add(rect);
+  canvas.on("mouse:move", function (o) {
+    if (!isDrawing) return;
+    const pointer = canvas.getPointer(o.e);
+
+    if (pointer.x < originX) {
+      rect.set({ left: Math.abs(pointer.x) });
+    }
+    if (pointer.y < originY) {
+      rect.set({ top: Math.abs(pointer.y) });
+    }
+
+    rect.set({ width: Math.abs(originX - pointer.x) });
+    rect.set({ height: Math.abs(originY - pointer.y) });
+
+    canvas.renderAll();
+  });
+
+  canvas.on("mouse:up", function (o) {
+    isDrawing = false;
+    disableDrawing(canvas);
+  });
 }
 
-function addArrow(canvas) {
-  var fromx = 0,
-    fromy = 100,
-    tox = 100,
-    toy = 100;
+// SHAPE: ARROW
 
-  var line = new fabric.Line([fromx, fromy, tox, toy], {
-    left: 75,
-    top: 70,
-    stroke: "red",
-  });
+function addArrowHead(canvas, line) {
+  const angle = Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
+  const arrowHeadSize = 15; // Adjust size as needed
 
-  var arrowHead = new fabric.Triangle({
-    width: 10,
-    height: 10,
+  // Calculate the arrowhead position
+  const arrowHead = new fabric.Triangle({
+    left: line.x2,
+    top: line.y2,
+    originX: "center",
+    originY: "center",
     fill: "red",
-    left: 180,
-    top: 65,
-    angle: 90,
+    angle: (angle * 180) / Math.PI + 90, // Convert angle to degrees and adjust
+    width: arrowHeadSize,
+    height: arrowHeadSize,
+    selectable: false,
+    evented: false,
   });
 
-  var objs = [line, arrowHead];
+  canvas.add(arrowHead);
+  canvas.renderAll();
 
-  var group = new fabric.Group(objs, {
+  // Group the line and arrowhead for easier manipulation
+  const group = new fabric.Group([line, arrowHead], {
     id: objectId++,
     customType: "Arrow",
   });
+
+  canvas.remove(line);
+  canvas.remove(arrowHead);
   canvas.add(group);
 }
+
+function enableArrowDrawing(canvas) {
+  enableDrawing(canvas);
+
+  let isDrawing = false;
+  let arrowStartPoint = null;
+  let line = null;
+
+  canvas.on("mouse:down", function (o) {
+    isDrawing = true;
+    const pointer = canvas.getPointer(o.e);
+    arrowStartPoint = [pointer.x, pointer.y];
+    line = new fabric.Line(arrowStartPoint.concat(arrowStartPoint), {
+      strokeWidth: 2,
+      fill: "red",
+      stroke: "red",
+      originX: "center",
+      originY: "center",
+      selectable: false,
+      evented: false,
+    });
+    canvas.add(line);
+  });
+
+  canvas.on("mouse:move", function (o) {
+    if (!isDrawing) return;
+    const pointer = canvas.getPointer(o.e);
+    line.set({ x2: pointer.x, y2: pointer.y });
+    canvas.renderAll();
+  });
+
+  canvas.on("mouse:up", function () {
+    isDrawing = false;
+    // Add the arrowhead at the end of the line
+    addArrowHead(canvas, line);
+    disableDrawing(canvas);
+  });
+}
+
+// SHAPE: TEXT
 
 function addText(canvas) {
   var text = new fabric.IText("Text", {
@@ -253,10 +330,32 @@ function addText(canvas) {
     customType: "Text",
   });
 
+  // Disable non-corner controls to hide the ability to scale without preserving aspect-ratio
+  text.setControlsVisibility({
+    mt: false, // middle top disable
+    mb: false, // middle bottom disable
+    ml: false, // middle left disable
+    mr: false, // middle right disable
+  });
+
   canvas.add(text);
 }
 
 // UTILITY
+
+function enableDrawing(canvas) {
+  canvas.defaultCursor = "crosshair";
+  drawingIndicator.style.display = "block";
+}
+
+function disableDrawing(canvas) {
+  canvas.defaultCursor = "default";
+  drawingIndicator.style.display = "none";
+
+  canvas.off("mouse:down");
+  canvas.off("mouse:move");
+  canvas.off("mouse:up");
+}
 
 function getFormattedDate(date) {
   const monthNames = [

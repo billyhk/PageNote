@@ -14,12 +14,13 @@
       <div class="toolbar_actions">
         <div class="shape-selector_container">
           <select id="shape-selector_menu">
-            <option value="text">Text</option>
             <option value="rectangle">Rectangle</option>
             <option value="arrow">Arrow</option>
+            <option value="text">Text</option>
           </select>
           <button id="shape-selector_btn">Add Shape</button>
         </div>
+
         <div class="export_controls">
           <input
             type="text"
@@ -32,21 +33,31 @@
     </div>
 
     <div class="canvas-container">
-      <!-- layers panel -->
-      <aside id="layers-panel">
-        <h2>Layers</h2>
-        <ul id="layers-list"></ul>
-      </aside>
+      <div class="side-panels-container">
+        <!-- layers panel -->
+        <aside id="layers-panel">
+          <h2>
+            Layers
+            <img
+              id="drawing-enabled-indicator"
+              title="Drawing Enabled"
+              src="../images/edit-icon.png"
+            />
+          </h2>
 
-      <!-- Notes -->
-      <aside id="notes-panel">
-        <h2>Notes</h2>
-        <textarea
-          id="notes-input"
-          rows="10"
-          placeholder="Enter notes here..."
-        ></textarea>
-      </aside>
+          <ul id="layers-list"></ul>
+        </aside>
+
+        <!-- Notes -->
+        <aside id="notes-panel">
+          <h2>Notes</h2>
+          <textarea
+            id="notes-input"
+            rows="10"
+            placeholder="Enter notes here..."
+          ></textarea>
+        </aside>
+      </div>
 
       <!-- ANNOTATION CANVAS -->
       <canvas id="c"></canvas>
