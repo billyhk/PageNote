@@ -10,6 +10,7 @@
     <div id="toolbar">
       <h1 class="header_title">Annotate</h1>
 
+      <!-- toolbar header -->
       <div class="toolbar_actions">
         <div class="shape-selector_container">
           <select id="shape-selector_menu">
@@ -19,7 +20,6 @@
           </select>
           <button id="shape-selector_btn">Add Shape</button>
         </div>
-
         <div class="export_controls">
           <input
             type="text"
@@ -30,7 +30,15 @@
         </div>
       </div>
     </div>
-    <canvas id="c"></canvas>
+
+    <div class="canvas-container">
+      <!-- layers panel -->
+      <aside id="layers-panel">
+        <h2>Layers</h2>
+        <ul id="layers-list"></ul>
+      </aside>
+      <canvas id="c"></canvas>
+    </div>
 
     <!-- JS -->
     <script src="../lib/fabricjs/index.js"></script>

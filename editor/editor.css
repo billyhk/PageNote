@@ -5,6 +5,38 @@ body {
 .toolbar_actions {
   display: flex;
   gap: 4rem;
-
   margin-bottom: 1rem;
+}
+
+.canvas-container {
+  display: flex;
+  border: 1px solid green;
+}
+
+/* LAYERS PANEL */
+
+#layers-panel {
+  margin: 0;
+  width: 200px;
+}
+
+#layers-panel h2 {
+  margin: 0;
+  border-bottom: 1px solid black;
+}
+
+#layers-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#layers-list li {
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+}
+
+#layers-list li:hover {
+  background-color: #f0f0f0;
 }
