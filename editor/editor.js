@@ -103,7 +103,6 @@ function setCroppedImageAndUrlToBackground(canvas) {
 
 function setCanvasSize(canvas, imgSize) {
   if (imgSize) {
-    console.log(imgSize);
     canvas.setWidth(imgSize.width);
     canvas.setHeight(imgSize.height);
     return;
