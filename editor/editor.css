@@ -14,10 +14,9 @@ body {
 }
 
 /* LAYERS PANEL */
-
 #layers-panel {
   margin: 0;
-  width: 200px;
+  min-width: 150px;
 }
 
 #layers-panel h2 {
@@ -44,4 +43,15 @@ body {
 #layers-list li.active {
   background: black;
   color: white;
+}
+
+/* NOTES FIELD */
+#notes-panel {
+  min-width: 300px;
+  border: 1px solid blue;
+  padding: 10px;
+}
+
+#notes-input {
+  width: 100%;
 }

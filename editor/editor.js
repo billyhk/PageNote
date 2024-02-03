@@ -1,4 +1,5 @@
 // Constants
+const PROJECT_NAME = "PageMark";
 const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
 const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
@@ -9,6 +10,7 @@ const shapeSelectorButton = document.getElementById("shape-selector_btn");
 const exportButton = document.getElementById("export-btn");
 const fileNameInput = document.getElementById("filename-input");
 const layersList = document.getElementById("layers-list");
+const notesInput = document.getElementById("notes-input");
 
 // Dynamic variables
 let objectId = 0;
@@ -16,108 +18,14 @@ let objectId = 0;
 document.addEventListener("DOMContentLoaded", function () {
   var canvas = new fabric.Canvas("c", { selection: true });
 
-  // Set default size
-  canvas.setWidth(window.innerWidth);
-  canvas.setHeight(window.innerHeight);
-
-  // Set size dynamically accordingly to cropped image size
-  chrome.storage.local.get(CROPPED_IMAGE_STORAGE_KEY, function (data) {
-    if (data[CROPPED_IMAGE_STORAGE_KEY]) {
-      fabric.Image.fromURL(data[CROPPED_IMAGE_STORAGE_KEY], function (img) {
-        // Match the canvas size to that of the image
-        canvas.setWidth(img.width);
-        canvas.setHeight(img.height);
-
-        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-          scaleX: canvas.width / img.width,
-          scaleY: canvas.height / img.height,
-        });
-      });
-    }
-  });
-
-  chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
-    var url = result[SCREENSHOT_URL_STORAGE_KEY];
-    addUrlToCanvas(canvas, url);
-    updateLayersList(canvas);
-  });
-
-  // Add event listeners
-  shapeSelectorMenu.addEventListener("change", function (e) {
-    var selectedShape = e.target.value;
-    addShape(selectedShape, canvas);
-  });
-
-  // Tool selector handler
-  shapeSelectorButton.addEventListener("click", function () {
-    var selectedShape = shapeSelectorMenu.value;
-    addShape(selectedShape, canvas);
-  });
-
-  // Remove Shape
-  document.addEventListener("keydown", function (event) {
-    if (canvas.getActiveObject()?.isEditing) {
-      return;
-    }
-
-    if (event.key === "Backspace" || event.key === "Delete") {
-      removeActiveObject(canvas);
-    }
-  });
-
-  // Deactivate Focus
-  document.addEventListener("keydown", function (event) {
-    // Check if the Delete key is pressed
-    if (event.key === "Escape") {
-      removeActiveObject(canvas, false);
-    }
-  });
-
-  // Handle adding/removing elements for the layers-list
-  canvas.on("object:added", function () {
-    updateLayersList(canvas);
-  });
-
-  canvas.on("object:removed", function () {
-    updateLayersList(canvas);
-  });
-
-  // Highlight active objects
-  canvas.on("selection:created", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
-  });
-
-  canvas.on("selection:updated", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
-  });
-
-  canvas.on("selection:cleared", function () {
-    clearHighlighting();
-  });
-
-  // Export
-  exportButton.addEventListener("click", function () {
-    var dataURL = canvas.toDataURL({ format: "png", quality: 0.8 });
-    var filename = fileNameInput.value.trim();
-
-    // Default file name
-    if (!filename) {
-      const formattedDate = getFormattedDate(new Date());
-      filename = `PageMark_Export (${formattedDate})`; // Default filename
-    }
-
-    // Ensure the filename ends with .png
-    filename += ".png";
-
-    // Proceed to create an anchor tag and trigger the download
-    var a = document.createElement("a");
-    a.href = dataURL;
-    a.download = filename; // Use the custom or default filename
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
+  // setCanvasSize(); // TODO: NOT WORKING
+  addUrlToCanvas(canvas);
+  setCroppedImageToBackground(canvas);
+  initializeCanvasListeners(canvas);
+  initializeElementListeners(canvas);
 });
+
+// HELPERS //
 
 function addShape(selectedShape, canvas) {
   switch (selectedShape) {
@@ -134,6 +42,8 @@ function addShape(selectedShape, canvas) {
       console.log("Tool not implemented:", selectedShape);
   }
 }
+
+// SHAPES
 
 function addRectangle(canvas) {
   var rect = new fabric.Rect({
@@ -201,6 +111,8 @@ function addText(canvas) {
   canvas.add(text);
 }
 
+// UTILITY
+
 function getFormattedDate(date) {
   const monthNames = [
     "Jan",
@@ -223,6 +135,8 @@ function getFormattedDate(date) {
 
   return `${monthNames[monthIndex]} ${day}, ${year}`;
 }
+
+// LAYERS LIST
 
 function updateLayersList(canvas) {
   var typeCount = {}; // Object to keep track of counts per type
@@ -283,51 +197,256 @@ function clearHighlighting() {
   });
 }
 
-function addUrlToCanvas(canvas, url) {
-  var borderHeight = 30; // Adjust as needed
-  var borderWidth = canvas.width;
-  var border = new fabric.Rect({
+// EXPORTING
+
+function addUrlToCanvas(canvas) {
+  chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
+    var url = result[SCREENSHOT_URL_STORAGE_KEY];
+
+    var borderHeight = 30; // Adjust as needed
+    var borderWidth = canvas.width;
+    var border = new fabric.Rect({
+      id: objectId++,
+      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+
+      left: 0,
+      top: 0,
+      fill: "black",
+      width: borderWidth,
+      height: borderHeight,
+      selectable: false,
+      evented: false,
+    });
+
+    var text = new fabric.Text(url, {
+      id: objectId++,
+      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+
+      left: 10, // Some padding
+      top: 5, // Adjust based on border height
+      fontSize: 14,
+      fill: "white",
+      selectable: false,
+      evented: false,
+    });
+
+    // Add both the border and the text to the canvas
+    canvas.add(border);
+    canvas.add(text);
+
+    // Ensure they are rendered below any existing objects
+    border.moveTo(0);
+    text.moveTo(1);
+
+    // Re-adjust the positions of other objects on the canvas to account for the new header
+    canvas.getObjects().forEach(function (obj) {
+      if (obj !== border && obj !== text) {
+        obj.set("top", obj.top + borderHeight);
+      }
+    });
+
+    canvas.renderAll();
+  });
+}
+
+function setFilename(filename) {
+  var filename = fileNameInput.value.trim();
+
+  // Default file name
+  if (!filename) {
+    const formattedDate = getFormattedDate(new Date());
+    filename = `${PROJECT_NAME}_Export (${formattedDate})`; // Default filename
+  }
+
+  // Ensure the filename ends with .png
+  filename += ".png";
+
+  return filename;
+}
+
+function createAndTriggerAnchor(dataURL, filename) {
+  var a = document.createElement("a");
+  a.href = dataURL;
+  a.download = filename; // Use the custom or default filename
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function prepareCanvasForExportWithAdditionalData(canvas, notesText) {
+  // Handle URL
+  // TODO ...
+
+  // Handle Notes
+  if (!notesText) {
+    return;
+  }
+
+  const originalWidth = canvas.width;
+  const notesWidth = 200; // Width of the notes area
+  const padding = 10; // Padding around the notes text
+
+  // Temporarily resize the canvas to include the notes area
+  canvas.setWidth(originalWidth + notesWidth);
+
+  // Create the notes text
+  const notes = new fabric.Textbox(notesText, {
+    left: padding,
+    top: padding,
+    fontSize: 14,
+    fill: "black",
+    backgroundColor: "white", // Set background color for notes
+    width: notesWidth - padding * 2, // Account for padding
+    selectable: false,
+    splitByGrapheme: true,
+    [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
     id: objectId++,
 
+    borderColor: "red",
+  });
+
+  // Create a white rectangle for the background if you want a distinct background
+  const background = new fabric.Rect({
     left: 0,
     top: 0,
-    fill: "black",
-    width: borderWidth,
-    height: borderHeight,
+    fill: "white",
+    width: notesWidth,
+    height: canvas.height,
     selectable: false,
-    evented: false,
-  });
-
-  var text = new fabric.Text(url, {
+    [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
     id: objectId++,
 
-    left: 10, // Some padding
-    top: 5, // Adjust based on border height
-    fontSize: 14,
-    fill: "white",
-    selectable: false,
-    evented: false,
+    borderColor: "blue",
+    borderWidth: 1,
   });
 
-  // Add both the border and the text to the canvas
-  canvas.add(border);
-  canvas.add(text);
-
-  // Ensure they are rendered below any existing objects
-  border.moveTo(0);
-  text.moveTo(1);
-
-  // Add custom properties
-  const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
-  border.set(EXCLUDE_FROM_LAYERS_LIST_KEY, true);
-  text.set(EXCLUDE_FROM_LAYERS_LIST_KEY, true);
-
-  // Re-adjust the positions of other objects on the canvas to account for the new header
-  canvas.getObjects().forEach(function (obj) {
-    if (obj !== border && obj !== text) {
-      obj.set("top", obj.top + borderHeight);
+  // Move all other objects to the right to make space for the notes
+  canvas.getObjects().forEach((obj) => {
+    if (obj !== background && obj !== notes) {
+      obj.set({ left: obj.left + notesWidth }).setCoords();
     }
   });
 
+  // Add the background and notes to the canvas
+  canvas.add(background);
+  canvas.add(notes);
+  canvas.renderAll();
+
+  return { background, notes, originalWidth }; // Return objects and original width for restoration
+}
+
+function restoreCanvasAfterExport(canvas, additionalData) {
+  if (!additionalData) {
+    return;
+  }
+
+  const { background, notes, originalWidth } = additionalData;
+
+  // Remove the temporary notes and background
+  canvas.remove(background);
+  canvas.remove(notes);
+
+  // Move objects back to their original positions
+  canvas.getObjects().forEach((obj) => {
+    obj.set({ left: obj.left - background.width }).setCoords();
+  });
+
+  // Restore the original canvas width
+  canvas.setWidth(originalWidth);
   canvas.renderAll();
 }
+
+function setCroppedImageToBackground(canvas) {
+  chrome.storage.local.get(CROPPED_IMAGE_STORAGE_KEY, function (data) {
+    const croppedImage = data[CROPPED_IMAGE_STORAGE_KEY];
+    if (croppedImage) {
+      fabric.Image.fromURL(croppedImage, function (img) {
+        // setCanvasSize(img) // TODO: NOT WORKING
+        canvas.setWidth(img.width);
+        canvas.setHeight(img.height);
+
+        img.set({
+          selectable: false, // Make it non-selectable
+          evented: false, // Make it non-interactive
+          [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
+          id: objectId++,
+        });
+
+        // Add the image as the bottom-most object (acts as a background)
+        canvas.add(img);
+        canvas.sendToBack(img);
+        canvas.renderAll();
+      });
+    }
+  });
+}
+
+// INITIALIZE CANVAS
+
+function initializeElementListeners(canvas) {
+  shapeSelectorMenu.addEventListener("change", function (e) {
+    addShape(e.target.value, canvas);
+  });
+
+  shapeSelectorButton.addEventListener("click", function () {
+    addShape(shapeSelectorMenu.value, canvas);
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Backspace" || event.key === "Delete") {
+      if (!canvas.getActiveObject()?.isEditing) {
+        removeActiveObject(canvas);
+      }
+    } else if (event.key === "Escape") {
+      removeActiveObject(canvas, false);
+    }
+  });
+
+  exportButton.addEventListener("click", function () {
+    const filename = setFilename();
+    const notesText = notesInput.value.trim();
+    const additionalData = prepareCanvasForExportWithAdditionalData(
+      canvas,
+      notesText
+      // url TODO: Add URL in the same way. Shouldn't be displayed in the UI
+    );
+    const dataURL = canvas.toDataURL("image/png");
+
+    restoreCanvasAfterExport(canvas, additionalData);
+    createAndTriggerAnchor(dataURL, filename);
+  });
+}
+
+function initializeCanvasListeners(canvas) {
+  canvas.on("object:added", function () {
+    updateLayersList(canvas);
+  });
+
+  canvas.on("object:removed", function () {
+    updateLayersList(canvas);
+  });
+
+  canvas.on("selection:created", function (e) {
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:updated", function (e) {
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:cleared", function () {
+    clearHighlighting();
+  });
+}
+
+// TODO: Figure out why this isn't working
+// function setCanvasSize(img) {
+//   if (img) {
+//     canvas.setWidth(img.width);
+//     canvas.setHeight(img.height);
+//     return;
+//   }
+
+//   canvas.setWidth(window.innerWidth);
+//   canvas.setHeight(window.innerHeight);
+// }
