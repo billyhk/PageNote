@@ -1,4 +1,14 @@
+// Constants
 const IMAGE_STORAGE_KEY = "croppedImage";
+
+// Elements
+const shapeSelectorMenu = document.getElementById("shape-selector_menu");
+const shapeSelectorButton = document.getElementById("shape-selector_btn");
+const exportButton = document.getElementById("export-btn");
+const fileNameInput = document.getElementById("filename-input");
+
+// Dynamics variables
+let objectId = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   var canvas = new fabric.Canvas("c", { selection: true });
@@ -23,13 +33,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  shapeSelectorMenu.addEventListener("change", function (e) {
+    var selectedShape = e.target.value;
+    addShape(selectedShape, canvas);
+  });
+
   // Tool selector handler
-  document
-    .getElementById("shape-selector_btn")
-    .addEventListener("click", function () {
-      var selectedShape = document.getElementById("shape-selector_menu").value;
-      addShape(selectedShape, canvas);
-    });
+  shapeSelectorButton.addEventListener("click", function () {
+    var selectedShape = shapeSelectorMenu.value;
+    addShape(selectedShape, canvas);
+  });
 
   // Remove Shape
   document.addEventListener("keydown", function (event) {
@@ -59,10 +72,24 @@ document.addEventListener("DOMContentLoaded", function () {
     updateLayersList(canvas);
   });
 
+  // Highlight active objects
+  canvas.on("selection:created", function (e) {
+    console.log("called");
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:updated", function (e) {
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:cleared", function () {
+    clearHighlighting();
+  });
+
   // Export
-  document.getElementById("export-btn").addEventListener("click", function () {
+  exportButton.addEventListener("click", function () {
     var dataURL = canvas.toDataURL({ format: "png", quality: 0.8 });
-    var filename = document.getElementById("filename-input").value.trim();
+    var filename = fileNameInput.value.trim();
 
     // Provide a default filename if none is entered
     if (!filename) {
@@ -101,6 +128,7 @@ function addShape(selectedShape, canvas) {
 
 function addRectangle(canvas) {
   var rect = new fabric.Rect({
+    id: objectId++,
     left: 100,
     top: 100,
     width: 60,
@@ -143,6 +171,7 @@ function addArrow(canvas) {
   var objs = [line, arrowHead];
 
   var group = new fabric.Group(objs, {
+    id: objectId++,
     customType: "Arrow",
   });
   canvas.add(group);
@@ -150,6 +179,7 @@ function addArrow(canvas) {
 
 function addText(canvas) {
   var text = new fabric.IText("Text", {
+    id: objectId++,
     left: 50,
     top: 50,
     fontFamily: "Arial",
@@ -200,6 +230,7 @@ function updateLayersList(canvas) {
 
     // Create a list item for each object
     var li = document.createElement("li");
+    li.setAttribute("data-id", obj.id);
     li.textContent = `${objType} ${typeCount[objType]}`;
     li.onclick = function () {
       canvas.setActiveObject(obj); // Set the clicked object as active
@@ -222,4 +253,21 @@ function removeActiveObject(canvas, shouldRemove = true) {
     canvas.discardActiveObject();
     canvas.requestRenderAll();
   }
+}
+
+function highlightActiveObjectInLayersList(activeObject) {
+  clearHighlighting();
+  var activeId = activeObject.id;
+  var listItem = document.querySelector(
+    `#layers-list li[data-id="${activeId}"]`
+  );
+  if (listItem) {
+    listItem.classList.add("active");
+  }
+}
+
+function clearHighlighting() {
+  document.querySelectorAll("#layers-list li").forEach((li) => {
+    li.classList.remove("active");
+  });
 }
