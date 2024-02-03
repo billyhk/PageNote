@@ -1,5 +1,5 @@
 // Constants
-const PROJECT_NAME = "PageMark";
+const PROJECT_NAME = "PageNote";
 const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
 const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";

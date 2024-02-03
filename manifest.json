@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PageMark: Screenshot & Annotate",
+  "name": "PageNote: Screenshot & Annotate",
   "version": "0.1",
   "description": "Capture and annotate webpages with ease.",
   "permissions": ["activeTab", "tabs", "<all_urls>", "storage"],
