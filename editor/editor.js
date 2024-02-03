@@ -17,15 +17,162 @@ let objectId = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   var canvas = new fabric.Canvas("c", { selection: true });
-
-  // setCanvasSize(); // TODO: NOT WORKING
-  addUrlToCanvas(canvas);
-  setCroppedImageToBackground(canvas);
+  setCanvasSize(canvas);
+  setCroppedImageAndUrlToBackground(canvas);
   initializeCanvasListeners(canvas);
   initializeElementListeners(canvas);
 });
 
-// HELPERS //
+// /////////// //
+//   HELPERS   //
+// //////////  //
+
+// INITIALIZE CANVAS
+
+function initializeElementListeners(canvas) {
+  shapeSelectorMenu.addEventListener("change", function (e) {
+    addShape(e.target.value, canvas);
+  });
+
+  shapeSelectorButton.addEventListener("click", function () {
+    addShape(shapeSelectorMenu.value, canvas);
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Backspace" || event.key === "Delete") {
+      if (!canvas.getActiveObject()?.isEditing) {
+        removeActiveObject(canvas);
+      }
+    } else if (event.key === "Escape") {
+      removeActiveObject(canvas, false);
+    }
+  });
+
+  exportButton.addEventListener("click", function () {
+    const filename = setFilename();
+    const notesText = notesInput.value.trim();
+    const extraNodesAndRestorationData = prepareCanvasForExportWithNotes(
+      canvas,
+      notesText
+    );
+    const dataURL = canvas.toDataURL("image/png");
+
+    restoreCanvasAfterExport(canvas, extraNodesAndRestorationData);
+    createAndTriggerAnchor(dataURL, filename);
+  });
+}
+
+function initializeCanvasListeners(canvas) {
+  canvas.on("object:added", function () {
+    updateLayersList(canvas);
+  });
+
+  canvas.on("object:removed", function () {
+    updateLayersList(canvas);
+  });
+
+  canvas.on("selection:created", function (e) {
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:updated", function (e) {
+    highlightActiveObjectInLayersList(e.selected[0]);
+  });
+
+  canvas.on("selection:cleared", function () {
+    clearHighlighting();
+  });
+}
+
+function setCroppedImageAndUrlToBackground(canvas) {
+  chrome.storage.local.get(CROPPED_IMAGE_STORAGE_KEY, function (data) {
+    const croppedImage = data[CROPPED_IMAGE_STORAGE_KEY];
+    if (croppedImage) {
+      fabric.Image.fromURL(croppedImage, function (img) {
+        setCanvasSize(canvas, img);
+        addUrlToCanvas(canvas, img.width);
+        addImageToCanvas(canvas, img);
+      });
+    }
+  });
+}
+
+function setCanvasSize(canvas, img) {
+  if (img) {
+    canvas.setWidth(img.width);
+    canvas.setHeight(img.height);
+    return;
+  }
+
+  canvas.setWidth(window.innerWidth);
+  canvas.setHeight(window.innerHeight);
+}
+
+function addUrlToCanvas(canvas, imgWidth) {
+  chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
+    var url = result[SCREENSHOT_URL_STORAGE_KEY];
+
+    var borderHeight = 30; // Adjust as needed
+    var borderWidth = imgWidth ?? canvas.width;
+    var border = new fabric.Rect({
+      id: objectId++,
+      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+
+      left: 0,
+      top: 0,
+      fill: "black",
+      width: borderWidth,
+      height: borderHeight,
+      selectable: false,
+      evented: false,
+    });
+
+    var text = new fabric.Text(url, {
+      id: objectId++,
+      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+
+      left: 10, // Some padding
+      top: 5, // Adjust based on border height
+      fontSize: 14,
+      fill: "white",
+      selectable: false,
+      evented: false,
+    });
+
+    // Add both the border and the text to the canvas
+    canvas.add(border);
+    canvas.add(text);
+
+    // Ensure they are rendered below any existing objects
+    border.moveTo(0);
+    text.moveTo(1);
+
+    // Re-adjust the positions of other objects on the canvas to account for the new header
+    canvas.getObjects().forEach(function (obj) {
+      if (obj !== border && obj !== text) {
+        obj.set("top", obj.top + borderHeight);
+      }
+    });
+
+    canvas.renderAll();
+  });
+}
+
+function addImageToCanvas(canvas, img) {
+  img.set({
+    selectable: false, // Make it non-selectable
+    evented: false, // Make it non-interactive
+    [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
+    id: objectId++,
+  });
+
+  // Add the image as the bottom-most object (acts as a background)
+  canvas.add(img);
+  canvas.sendToBack(img);
+  canvas.renderAll();
+}
+
+// SHAPES
 
 function addShape(selectedShape, canvas) {
   switch (selectedShape) {
@@ -42,8 +189,6 @@ function addShape(selectedShape, canvas) {
       console.log("Tool not implemented:", selectedShape);
   }
 }
-
-// SHAPES
 
 function addRectangle(canvas) {
   var rect = new fabric.Rect({
@@ -199,56 +344,6 @@ function clearHighlighting() {
 
 // EXPORTING
 
-function addUrlToCanvas(canvas) {
-  chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
-    var url = result[SCREENSHOT_URL_STORAGE_KEY];
-
-    var borderHeight = 30; // Adjust as needed
-    var borderWidth = canvas.width;
-    var border = new fabric.Rect({
-      id: objectId++,
-      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
-
-      left: 0,
-      top: 0,
-      fill: "black",
-      width: borderWidth,
-      height: borderHeight,
-      selectable: false,
-      evented: false,
-    });
-
-    var text = new fabric.Text(url, {
-      id: objectId++,
-      [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
-
-      left: 10, // Some padding
-      top: 5, // Adjust based on border height
-      fontSize: 14,
-      fill: "white",
-      selectable: false,
-      evented: false,
-    });
-
-    // Add both the border and the text to the canvas
-    canvas.add(border);
-    canvas.add(text);
-
-    // Ensure they are rendered below any existing objects
-    border.moveTo(0);
-    text.moveTo(1);
-
-    // Re-adjust the positions of other objects on the canvas to account for the new header
-    canvas.getObjects().forEach(function (obj) {
-      if (obj !== border && obj !== text) {
-        obj.set("top", obj.top + borderHeight);
-      }
-    });
-
-    canvas.renderAll();
-  });
-}
-
 function setFilename(filename) {
   var filename = fileNameInput.value.trim();
 
@@ -273,11 +368,7 @@ function createAndTriggerAnchor(dataURL, filename) {
   document.body.removeChild(a);
 }
 
-function prepareCanvasForExportWithAdditionalData(canvas, notesText) {
-  // Handle URL
-  // TODO ...
-
-  // Handle Notes
+function prepareCanvasForExportWithNotes(canvas, notesText) {
   if (!notesText) {
     return;
   }
@@ -335,12 +426,12 @@ function prepareCanvasForExportWithAdditionalData(canvas, notesText) {
   return { background, notes, originalWidth }; // Return objects and original width for restoration
 }
 
-function restoreCanvasAfterExport(canvas, additionalData) {
-  if (!additionalData) {
+function restoreCanvasAfterExport(canvas, extraNodesAndRestorationData) {
+  if (!extraNodesAndRestorationData) {
     return;
   }
 
-  const { background, notes, originalWidth } = additionalData;
+  const { background, notes, originalWidth } = extraNodesAndRestorationData;
 
   // Remove the temporary notes and background
   canvas.remove(background);
@@ -355,98 +446,3 @@ function restoreCanvasAfterExport(canvas, additionalData) {
   canvas.setWidth(originalWidth);
   canvas.renderAll();
 }
-
-function setCroppedImageToBackground(canvas) {
-  chrome.storage.local.get(CROPPED_IMAGE_STORAGE_KEY, function (data) {
-    const croppedImage = data[CROPPED_IMAGE_STORAGE_KEY];
-    if (croppedImage) {
-      fabric.Image.fromURL(croppedImage, function (img) {
-        // setCanvasSize(img) // TODO: NOT WORKING
-        canvas.setWidth(img.width);
-        canvas.setHeight(img.height);
-
-        img.set({
-          selectable: false, // Make it non-selectable
-          evented: false, // Make it non-interactive
-          [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
-          id: objectId++,
-        });
-
-        // Add the image as the bottom-most object (acts as a background)
-        canvas.add(img);
-        canvas.sendToBack(img);
-        canvas.renderAll();
-      });
-    }
-  });
-}
-
-// INITIALIZE CANVAS
-
-function initializeElementListeners(canvas) {
-  shapeSelectorMenu.addEventListener("change", function (e) {
-    addShape(e.target.value, canvas);
-  });
-
-  shapeSelectorButton.addEventListener("click", function () {
-    addShape(shapeSelectorMenu.value, canvas);
-  });
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Backspace" || event.key === "Delete") {
-      if (!canvas.getActiveObject()?.isEditing) {
-        removeActiveObject(canvas);
-      }
-    } else if (event.key === "Escape") {
-      removeActiveObject(canvas, false);
-    }
-  });
-
-  exportButton.addEventListener("click", function () {
-    const filename = setFilename();
-    const notesText = notesInput.value.trim();
-    const additionalData = prepareCanvasForExportWithAdditionalData(
-      canvas,
-      notesText
-      // url TODO: Add URL in the same way. Shouldn't be displayed in the UI
-    );
-    const dataURL = canvas.toDataURL("image/png");
-
-    restoreCanvasAfterExport(canvas, additionalData);
-    createAndTriggerAnchor(dataURL, filename);
-  });
-}
-
-function initializeCanvasListeners(canvas) {
-  canvas.on("object:added", function () {
-    updateLayersList(canvas);
-  });
-
-  canvas.on("object:removed", function () {
-    updateLayersList(canvas);
-  });
-
-  canvas.on("selection:created", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
-  });
-
-  canvas.on("selection:updated", function (e) {
-    highlightActiveObjectInLayersList(e.selected[0]);
-  });
-
-  canvas.on("selection:cleared", function () {
-    clearHighlighting();
-  });
-}
-
-// TODO: Figure out why this isn't working
-// function setCanvasSize(img) {
-//   if (img) {
-//     canvas.setWidth(img.width);
-//     canvas.setHeight(img.height);
-//     return;
-//   }
-
-//   canvas.setWidth(window.innerWidth);
-//   canvas.setHeight(window.innerHeight);
-// }
