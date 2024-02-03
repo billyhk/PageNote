@@ -1,13 +1,16 @@
 // Constants
-const IMAGE_STORAGE_KEY = "croppedImage";
+const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
+const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
+const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
 
 // Elements
 const shapeSelectorMenu = document.getElementById("shape-selector_menu");
 const shapeSelectorButton = document.getElementById("shape-selector_btn");
 const exportButton = document.getElementById("export-btn");
 const fileNameInput = document.getElementById("filename-input");
+const layersList = document.getElementById("layers-list");
 
-// Dynamics variables
+// Dynamic variables
 let objectId = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -18,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
   canvas.setHeight(window.innerHeight);
 
   // Set size dynamically accordingly to cropped image size
-  chrome.storage.local.get(IMAGE_STORAGE_KEY, function (data) {
-    if (data[IMAGE_STORAGE_KEY]) {
-      fabric.Image.fromURL(data[IMAGE_STORAGE_KEY], function (img) {
+  chrome.storage.local.get(CROPPED_IMAGE_STORAGE_KEY, function (data) {
+    if (data[CROPPED_IMAGE_STORAGE_KEY]) {
+      fabric.Image.fromURL(data[CROPPED_IMAGE_STORAGE_KEY], function (img) {
         // Match the canvas size to that of the image
         canvas.setWidth(img.width);
         canvas.setHeight(img.height);
@@ -33,6 +36,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  chrome.storage.local.get([SCREENSHOT_URL_STORAGE_KEY], function (result) {
+    var url = result[SCREENSHOT_URL_STORAGE_KEY];
+    addUrlToCanvas(canvas, url);
+    updateLayersList(canvas);
+  });
+
+  // Add event listeners
   shapeSelectorMenu.addEventListener("change", function (e) {
     var selectedShape = e.target.value;
     addShape(selectedShape, canvas);
@@ -74,7 +84,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Highlight active objects
   canvas.on("selection:created", function (e) {
-    console.log("called");
     highlightActiveObjectInLayersList(e.selected[0]);
   });
 
@@ -91,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var dataURL = canvas.toDataURL({ format: "png", quality: 0.8 });
     var filename = fileNameInput.value.trim();
 
-    // Provide a default filename if none is entered
+    // Default file name
     if (!filename) {
       const formattedDate = getFormattedDate(new Date());
       filename = `PageMark_Export (${formattedDate})`; // Default filename
@@ -216,11 +225,13 @@ function getFormattedDate(date) {
 }
 
 function updateLayersList(canvas) {
-  var layersList = document.getElementById("layers-list");
   var typeCount = {}; // Object to keep track of counts per type
   layersList.innerHTML = ""; // Initialize list
 
-  canvas.getObjects().forEach(function (obj, index) {
+  canvas.getObjects().forEach(function (obj) {
+    var shouldExcludeFromList = obj[EXCLUDE_FROM_LAYERS_LIST_KEY] ?? false;
+    if (shouldExcludeFromList) return;
+
     var objType = obj.customType || obj.type;
     if (!typeCount[objType]) {
       typeCount[objType] = 1;
@@ -270,4 +281,53 @@ function clearHighlighting() {
   document.querySelectorAll("#layers-list li").forEach((li) => {
     li.classList.remove("active");
   });
+}
+
+function addUrlToCanvas(canvas, url) {
+  var borderHeight = 30; // Adjust as needed
+  var borderWidth = canvas.width;
+  var border = new fabric.Rect({
+    id: objectId++,
+
+    left: 0,
+    top: 0,
+    fill: "black",
+    width: borderWidth,
+    height: borderHeight,
+    selectable: false,
+    evented: false,
+  });
+
+  var text = new fabric.Text(url, {
+    id: objectId++,
+
+    left: 10, // Some padding
+    top: 5, // Adjust based on border height
+    fontSize: 14,
+    fill: "white",
+    selectable: false,
+    evented: false,
+  });
+
+  // Add both the border and the text to the canvas
+  canvas.add(border);
+  canvas.add(text);
+
+  // Ensure they are rendered below any existing objects
+  border.moveTo(0);
+  text.moveTo(1);
+
+  // Add custom properties
+  const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
+  border.set(EXCLUDE_FROM_LAYERS_LIST_KEY, true);
+  text.set(EXCLUDE_FROM_LAYERS_LIST_KEY, true);
+
+  // Re-adjust the positions of other objects on the canvas to account for the new header
+  canvas.getObjects().forEach(function (obj) {
+    if (obj !== border && obj !== text) {
+      obj.set("top", obj.top + borderHeight);
+    }
+  });
+
+  canvas.renderAll();
 }
