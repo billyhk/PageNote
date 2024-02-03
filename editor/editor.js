@@ -15,6 +15,7 @@ const CUSTOM_TYPES = {
   RECTANGLE: "Rectangle",
   TEXT: "Text",
 };
+const DEFAULT_COLOR = "red";
 
 // Elements
 const shapeSelectorMenu = document.getElementById("shape-selector_menu");
@@ -88,11 +89,13 @@ function initializeCanvasListeners(canvas) {
   canvas.on("selection:created", function (e) {
     updateColorSelectorVisibility(canvas);
     highlightActiveObjectInLayersList(e.selected);
+    updateColorSelectorValue(e.selected);
   });
 
   canvas.on("selection:updated", function (e) {
     updateColorSelectorVisibility(canvas);
     highlightActiveObjectInLayersList(e.selected);
+    updateColorSelectorValue(e.selected);
   });
 
   canvas.on("selection:cleared", function () {
@@ -250,7 +253,7 @@ function enableRectangleDrawing(canvas) {
       originY: "top",
       width: 1, // Initial small width to avoid errors
       height: 1, // Initial small height to avoid errors
-      stroke: "red",
+      stroke: DEFAULT_COLOR,
       strokeWidth: 2,
       fill: "",
       noScaleCache: false,
@@ -297,7 +300,7 @@ function addArrowHead(canvas, line) {
     top: line.y2,
     originX: "center",
     originY: "center",
-    fill: "red",
+    fill: DEFAULT_COLOR,
     angle: (angle * 180) / Math.PI + 90, // Convert angle to degrees and adjust
     width: arrowHeadSize,
     height: arrowHeadSize,
@@ -311,6 +314,7 @@ function addArrowHead(canvas, line) {
   // Group the line and arrowhead for easier manipulation
   const group = new fabric.Group([line, arrowHead], {
     id: objectId++,
+    fill: DEFAULT_COLOR,
     customType: CUSTOM_TYPES.ARROW,
   });
 
@@ -334,8 +338,8 @@ function enableArrowDrawing(canvas) {
     arrowStartPoint = [pointer.x, pointer.y];
     line = new fabric.Line(arrowStartPoint.concat(arrowStartPoint), {
       strokeWidth: 2,
-      fill: "red",
-      stroke: "red",
+      fill: DEFAULT_COLOR,
+      stroke: DEFAULT_COLOR,
       originX: "center",
       originY: "center",
       selectable: false,
@@ -367,7 +371,7 @@ function addText(canvas) {
     left: 50,
     top: 50,
     fontFamily: "Arial",
-    fill: "red",
+    fill: DEFAULT_COLOR,
     lineHeight: 1.1,
     fontSize: 28,
     customType: CUSTOM_TYPES.TEXT,
@@ -376,7 +380,7 @@ function addText(canvas) {
   canvas.add(text);
 }
 
-// UTILITY
+// DRAWING
 
 function enableDrawing(canvas) {
   canvas.defaultCursor = "crosshair";
@@ -391,6 +395,8 @@ function disableDrawing(canvas) {
   canvas.off("mouse:move");
   canvas.off("mouse:up");
 }
+
+// COLOR
 
 function applyColorToSelection(canvas, selectedColor) {
   const activeObject = canvas.getActiveObject();
@@ -438,6 +444,29 @@ function updateColorSelectorVisibility(canvas) {
   const activeObject = canvas.getActiveObject();
   colorSelector.style.display = activeObject ? "block" : "none";
 }
+
+function updateColorSelectorValue(activeObjects) {
+  // Initialize a set to track unique colors
+  let uniqueColors = new Set();
+
+  // Iterate over each object in the group to collect unique colors
+  activeObjects.forEach((obj) => {
+    const color = obj.stroke ?? obj.fill;
+    uniqueColors.add(color);
+  });
+
+  // If multiple unique colors are found, use the placeholder option
+  if (uniqueColors.size > 1) {
+    colorSelector.value = ""; // Set to the placeholder option value
+    return;
+  }
+
+  // If there's only one unique color, set the selector to that color
+  colorSelector.value = uniqueColors.values().next().value;
+  return;
+}
+
+// UTILITY
 
 function getFormattedDate(date) {
   const monthNames = [
@@ -577,7 +606,7 @@ function prepareCanvasForExportWithNotes(canvas, notesText) {
     [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
     id: objectId++,
 
-    borderColor: "red",
+    borderColor: DEFAULT_COLOR,
   });
 
   // Create a white rectangle for the background if you want a distinct background
