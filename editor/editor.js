@@ -91,7 +91,7 @@ function setCroppedImageAndUrlToBackground(canvas) {
       fabric.Image.fromURL(croppedImage, function (img) {
         setCanvasSize(canvas, img);
         addUrlToCanvas(canvas, img.width);
-        addImageToCanvas(canvas, img);
+        addCroppedImageToCanvas(canvas, img);
       });
     }
   });
@@ -158,7 +158,7 @@ function addUrlToCanvas(canvas, imgWidth) {
   });
 }
 
-function addImageToCanvas(canvas, img) {
+function addCroppedImageToCanvas(canvas, img) {
   img.set({
     selectable: false, // Make it non-selectable
     evented: false, // Make it non-interactive
