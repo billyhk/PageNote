@@ -28,6 +28,10 @@ const drawingIndicator = document.getElementById("drawing-enabled-indicator");
 const colorSelector = document.getElementById("color-selector");
 const toggleLayersPanelCollapsedBtn =
   document.getElementById("toggle-layers-btn");
+const toggleNotesPanelCollapsedBtn =
+  document.getElementById("toggle-notes-btn");
+const layersPanel = document.getElementById("layers-panel");
+const notesPanel = document.getElementById("notes-panel");
 
 // Dynamic variables
 let objectId = 0;
@@ -51,9 +55,12 @@ function initializeElementListeners(canvas) {
     if (event.key === "Backspace" || event.key === "Delete") {
       if (!canvas.getActiveObject()?.isEditing) {
         removeActiveObject(canvas);
+        return;
       }
-    } else if (event.key === "Escape") {
+    }
+    if (event.key === "Escape") {
       removeActiveObject(canvas, false);
+      return;
     }
   });
 
@@ -87,6 +94,14 @@ function initializeElementListeners(canvas) {
     layersPanel.classList.toggle("collapsed");
 
     this.innerHTML = layersPanel.classList.contains("collapsed")
+      ? "&#8594;"
+      : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
+  });
+
+  toggleNotesPanelCollapsedBtn.addEventListener("click", function () {
+    notesPanel.classList.toggle("collapsed");
+
+    this.innerHTML = notesPanel.classList.contains("collapsed")
       ? "&#8594;"
       : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
   });
@@ -542,6 +557,11 @@ function removeActiveObject(canvas, shouldRemove = true) {
 
   if (activeObject) {
     if (shouldRemove) {
+      if (activeObject._objects?.length) {
+        activeObject._objects.forEach(function (obj) {
+          canvas.remove(obj);
+        });
+      }
       canvas.remove(activeObject);
     }
 

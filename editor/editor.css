@@ -124,7 +124,8 @@ aside {
   min-width: 0; /* Allows the panel to fully collapse */
 }
 
-#layers-panel.collapsed {
+#layers-panel.collapsed,
+#notes-panel.collapsed {
   width: 0px; /* Collapse the panel */
 }
 
@@ -142,9 +143,10 @@ aside {
   color: #333; /* Darker color for better contrast */
 }
 
-#toggle-layers-btn {
+#toggle-layers-btn,
+#toggle-notes-btn {
   border: 1px solid #ddd;
-  background-color: #ddd; /* Soft background color */
+  background-color: #eee; /* Soft background color */
   padding: 5px 8px; /* Padding for a smaller, cute look */
   font-size: 12px; /* Smaller font size */
   cursor: pointer; /* Cursor pointer to indicate it's clickable */
@@ -152,7 +154,12 @@ aside {
   color: #000;
 }
 
-#toggle-layers-btn:hover {
+#toggle-notes-btn {
+  margin-bottom: 5px;
+}
+
+#toggle-layers-btn:hover,
+#toggle-notes-btn:hover {
   transform: scale(
     1.1
   ); /* Slightly enlarge the button on hover for a cute effect */
@@ -198,6 +205,9 @@ aside {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 15px; /* Padding inside the notes panel */
+
+  transition: width 0.5s ease-in;
+  min-width: 0; /* Allows the panel to fully collapse */
 }
 
 #notes-panel .panel-header {
