@@ -26,6 +26,8 @@ const layersList = document.getElementById("layers-list");
 const notesInput = document.getElementById("notes-input");
 const drawingIndicator = document.getElementById("drawing-enabled-indicator");
 const colorSelector = document.getElementById("color-selector");
+const toggleLayersPanelCollapsedBtn =
+  document.getElementById("toggle-layers-btn");
 
 // Dynamic variables
 let objectId = 0;
@@ -78,6 +80,15 @@ function initializeElementListeners(canvas) {
     const dataURL = canvas.toDataURL("image/png");
     restoreCanvasAfterExport(canvas, extraNodesAndRestorationData);
     createAndTriggerAnchor(dataURL, filename);
+  });
+
+  toggleLayersPanelCollapsedBtn.addEventListener("click", function () {
+    const layersPanel = document.getElementById("layers-panel");
+    layersPanel.classList.toggle("collapsed");
+
+    this.innerHTML = layersPanel.classList.contains("collapsed")
+      ? "&#8594;"
+      : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
   });
 }
 

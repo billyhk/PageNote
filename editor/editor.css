@@ -57,8 +57,7 @@ select {
   height: 30px;
 }
 
-select:hover,
-select:focus {
+select:hover {
   border-color: #bbb;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   outline: none;
@@ -94,8 +93,7 @@ button {
   height: 30px;
 }
 
-button:hover,
-button:focus {
+button:hover {
   background-color: #0056b3;
   outline: none;
 }
@@ -110,14 +108,24 @@ button:focus {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds subtle shadow for depth */
 }
 
+aside {
+  width: 220px;
+}
+
 /* Layers Panel */
 #layers-panel {
   margin: 0;
-  width: 220px; /* Adjusted width */
   background-color: #ffffff; /* White background for a clean look */
   border: 1px solid #eaeaea; /* Subtle border */
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Soft shadow */
+
+  transition: width 0.5s ease-in;
+  min-width: 0; /* Allows the panel to fully collapse */
+}
+
+#layers-panel.collapsed {
+  width: 0px; /* Collapse the panel */
 }
 
 #layers-panel .panel-header {
@@ -134,10 +142,26 @@ button:focus {
   color: #333; /* Darker color for better contrast */
 }
 
+#toggle-layers-btn {
+  border: 1px solid #ddd;
+  background-color: #ddd; /* Soft background color */
+  padding: 5px 8px; /* Padding for a smaller, cute look */
+  font-size: 12px; /* Smaller font size */
+  cursor: pointer; /* Cursor pointer to indicate it's clickable */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transition for interaction */
+  color: #000;
+}
+
+#toggle-layers-btn:hover {
+  transform: scale(
+    1.1
+  ); /* Slightly enlarge the button on hover for a cute effect */
+}
+
 #drawing-enabled-indicator {
   display: none; /* No change here, but consider adding margin if shown */
-  width: 14px;
-  height: 14px;
+  width: 24px;
+  height: 24px;
 }
 
 /* color selector */
@@ -169,7 +193,6 @@ button:focus {
 
 /* Notes Panel */
 #notes-panel {
-  width: 220px; /* Matching width with layers panel for consistency */
   background-color: #ffffff;
   border: 1px solid #eaeaea;
   border-radius: 8px;
