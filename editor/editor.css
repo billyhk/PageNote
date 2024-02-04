@@ -24,9 +24,8 @@ ul {
   display: flex;
 }
 
-.side-panels-container {
-  display: flex;
-  border: 1px solid #aaa;
+.app-name {
+  font-weight: 800;
 }
 
 /* TOOLBAR  */
@@ -45,19 +44,103 @@ ul {
   gap: 0.5rem;
 }
 
-/* LAYERS PANEL */
+/* Base Styles for Select Inputs */
+select {
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  height: 30px;
+}
+
+select:hover,
+select:focus {
+  border-color: #bbb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+/* Base Styles for Text Inputs */
+.text-input {
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.text-input:hover,
+.text-input:focus {
+  border-color: #bbb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+/* Base Styles for Buttons */
+button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  height: 30px;
+}
+
+button:hover,
+button:focus {
+  background-color: #0056b3;
+  outline: none;
+}
+
+/* General Styles for Side Panels */
+.side-panels-container {
+  display: flex;
+  gap: 20px; /* Ensures space between panels */
+  padding: 10px; /* Adds some padding around the panels */
+  background-color: #fafafa; /* Light background for the container */
+  border-radius: 8px; /* Adds rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds subtle shadow for depth */
+}
+
+/* Layers Panel */
 #layers-panel {
   margin: 0;
-  min-width: 175px;
-  background-color: #f5feff;
+  width: 220px; /* Adjusted width */
+  background-color: #ffffff; /* White background for a clean look */
+  border: 1px solid #eaeaea; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Soft shadow */
+}
+
+#layers-panel .panel-header {
+  min-height: 40px;
+  padding: 5px; /* More padding for header */
+  border-bottom: 1px solid #eaeaea; /* Adds a line to separate the header */
+  background-color: #f8f8f8; /* Slightly different color for the header */
+}
+
+#layers-panel h2 {
+  margin: 0; /* Removes default margin */
+  font-size: 16px; /* Larger font size for the title */
+  font-weight: 600; /* Makes font weight bolder */
+  color: #333; /* Darker color for better contrast */
 }
 
 #drawing-enabled-indicator {
-  display: none;
+  display: none; /* No change here, but consider adding margin if shown */
   width: 14px;
   height: 14px;
 }
 
+/* color selector */
 #color-selector {
   display: none;
 }
@@ -65,35 +148,51 @@ ul {
 #layers-list {
   list-style-type: none;
   padding: 0;
-}
-
-#layers-panel h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin: 0; /* Removes default margin */
+  max-height: 300px;
+  overflow-y: auto; /* Enables scrolling for long lists */
 }
 
 #layers-list li {
   cursor: pointer;
-  padding: 5px;
+  padding: 8px 15px; /* More padding for better touch target */
+  margin: 0.5rem 0;
+  transition: background-color 0.2s; /* Smooth transition for hover effect */
 }
 
-#layers-list li:hover {
-  background-color: #f0f0f0;
-}
-
+#layers-list li:hover,
 #layers-list li.active {
-  background: black;
+  background-color: #007bff; /* Bright color for hover and active state */
   color: white;
+  border-radius: 5px; /* Rounded corners for list items */
 }
 
-/* NOTES PANEL */
+/* Notes Panel */
 #notes-panel {
-  min-width: 200px;
-  background-color: #ccc;
-  padding-right: 5px;
+  width: 220px; /* Matching width with layers panel for consistency */
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 15px; /* Padding inside the notes panel */
+}
+
+#notes-panel .panel-header {
+  margin-bottom: 10px; /* Adds some space below the header */
+}
+
+#notes-panel h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
 }
 
 #notes-input {
-  width: 100%;
+  width: calc(100% - 10px); /* Adjusts width to account for padding */
+  padding: 8px; /* Pads the inside of the textarea */
+  border-radius: 5px; /* Rounds the corners */
+  border: 1px solid #ddd; /* Subtle border */
+  resize: vertical; /* Allows vertical resizing only */
+  font-family: Arial, sans-serif; /* Ensures consistent font usage */
 }

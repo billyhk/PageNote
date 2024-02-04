@@ -55,6 +55,10 @@ function initializeElementListeners(canvas) {
     }
   });
 
+  shapeSelectorMenu.addEventListener("change", function () {
+    disableDrawing(canvas);
+  });
+
   shapeSelectorButton.addEventListener("click", function () {
     addShape(shapeSelectorMenu.value, canvas);
   });
