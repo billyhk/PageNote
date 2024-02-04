@@ -14,6 +14,7 @@ const CUSTOM_TYPES = {
   ARROW: "Arrow",
   RECTANGLE: "Rectangle",
   TEXT: "Text",
+  PATH: "Path",
 };
 const DEFAULT_COLOR = "red";
 
@@ -60,6 +61,7 @@ function initializeElementListeners(canvas) {
     }
     if (event.key === "Escape") {
       removeActiveObject(canvas, false);
+      disableDrawing(canvas);
       return;
     }
   });
@@ -104,6 +106,10 @@ function initializeElementListeners(canvas) {
     this.innerHTML = notesPanel.classList.contains("collapsed")
       ? "&#8594;"
       : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
+  });
+
+  drawingIndicator.addEventListener("click", function () {
+    toggleDrawingMode(canvas, false);
   });
 }
 
@@ -256,8 +262,24 @@ function addShape(selectedShape, canvas) {
     case "text":
       addText(canvas);
       break;
+    case "draw":
+      toggleDrawingMode(canvas, true);
+      break;
     default:
       console.log("Tool not implemented:", selectedShape);
+  }
+}
+
+// SHAPE: FREE DRAWING
+
+function toggleDrawingMode(canvas, enable) {
+  canvas.isDrawingMode = enable;
+  if (enable) {
+    enableDrawing(canvas);
+    canvas.freeDrawingBrush.color = DEFAULT_COLOR;
+    canvas.freeDrawingBrush.width = 5;
+  } else {
+    disableDrawing(canvas);
   }
 }
 
@@ -424,6 +446,8 @@ function enableDrawing(canvas) {
 }
 
 function disableDrawing(canvas) {
+  canvas.isDrawingMode = false;
+
   canvas.defaultCursor = "default";
   drawingIndicator.style.display = "none";
 
@@ -447,41 +471,56 @@ function applyColorToSelection(canvas, selectedColor) {
   if (!activeObject) return;
 
   if (activeObject.type === "activeSelection") {
-    // Apply color change to each object in the group
     activeObject.forEachObject((obj) => {
-      setUpdatedArrowColorProperties(obj, selectedColor);
-      updateActiveObjectColorProperties(obj, selectedColor);
+      updateColorPropertiesByType(obj, selectedColor);
     });
     canvas.requestRenderAll();
     return;
   }
 
-  setUpdatedArrowColorProperties(activeObject, selectedColor);
-  updateActiveObjectColorProperties(activeObject, selectedColor);
+  updateColorPropertiesByType(activeObject, selectedColor);
   canvas.requestRenderAll();
+}
+
+function updateColorPropertiesByType(activeObject, selectedColor) {
+  setUpdatedArrowColorProperties(activeObject, selectedColor);
+  setUpdatedRectableBorderColorProperties(activeObject, selectedColor);
+  setUpdatedPathColorProperties(activeObject, selectedColor);
+  setUpdatedTextColorProperties(activeObject, selectedColor);
+}
+
+function setUpdatedPathColorProperties(activeObject, selectedColor) {
+  if (activeObject.type === CUSTOM_TYPES.PATH.toLowerCase()) {
+    activeObject.set({ stroke: selectedColor });
+  }
+}
+
+function setUpdatedRectableBorderColorProperties(activeObject, selectedColor) {
+  if (activeObject.customType === CUSTOM_TYPES.RECTANGLE) {
+    activeObject.set({ stroke: selectedColor });
+  }
+}
+
+function setUpdatedTextColorProperties(activeObject, selectedColor) {
+  if (activeObject.customType === CUSTOM_TYPES.TEXT) {
+    activeObject.set({ fill: selectedColor });
+  }
 }
 
 function setUpdatedArrowColorProperties(activeObject, selectedColor) {
   if (activeObject.customType === CUSTOM_TYPES.ARROW) {
+    const updatedProperties = { fill: selectedColor, stroke: selectedColor };
+    activeObject.set(updatedProperties);
+
     activeObject._objects.forEach((obj) => {
       if (obj.type === "line") {
-        obj.set({ fill: selectedColor, stroke: selectedColor });
+        obj.set(updatedProperties);
       }
       if (obj.type === "triangle") {
-        obj.set({ fill: selectedColor, stroke: selectedColor });
+        obj.set(updatedProperties);
       }
     });
   }
-}
-
-function updateActiveObjectColorProperties(activeObject, selectedColor) {
-  // Persist transparent fill if intended
-  const fillOrStroke =
-    activeObject.fill === ""
-      ? { stroke: selectedColor }
-      : { fill: selectedColor };
-
-  activeObject.set(fillOrStroke);
 }
 
 function updateColorSelectorVisibility(canvas) {
@@ -511,6 +550,11 @@ function updateColorSelectorValue(activeObjects) {
 }
 
 // UTILITY
+
+function capitalizeFirstLetter(string) {
+  if (!string) return string;
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 function getFormattedDate(date) {
   const monthNames = [
@@ -555,7 +599,7 @@ function updateLayersList(canvas) {
     // Create a list item for each object
     var li = document.createElement("li");
     li.setAttribute("data-id", obj.id);
-    li.textContent = `${objType} ${typeCount[objType]}`;
+    li.textContent = `${capitalizeFirstLetter(objType)} ${typeCount[objType]}`;
     li.onclick = function () {
       canvas.setActiveObject(obj); // Set the clicked object as active
       highlightActiveObjectInLayersList([obj]);
