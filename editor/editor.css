@@ -96,6 +96,7 @@ button {
 button:hover {
   background-color: #0056b3;
   outline: none;
+  z-index: 100;
 }
 
 /* General Styles for Side Panels */
@@ -174,6 +175,7 @@ aside {
 /* color selector */
 #color-selector {
   display: none;
+  width: 100px;
 }
 
 #layers-list {
@@ -228,4 +230,8 @@ aside {
   border: 1px solid #ddd; /* Subtle border */
   resize: vertical; /* Allows vertical resizing only */
   font-family: Arial, sans-serif; /* Ensures consistent font usage */
+}
+
+#notes-panel.collapsed #notes-input {
+  overflow: hidden;
 }

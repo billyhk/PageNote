@@ -106,6 +106,8 @@ function initializeElementListeners(canvas) {
     this.innerHTML = notesPanel.classList.contains("collapsed")
       ? "&#8594;"
       : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
+
+    notesInput.disabled = !notesInput.disabled; // Toggle disabled state
   });
 
   drawingIndicator.addEventListener("click", function () {
