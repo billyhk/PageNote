@@ -415,11 +415,25 @@ function addText(canvas) {
 function enableDrawing(canvas) {
   canvas.defaultCursor = "crosshair";
   drawingIndicator.style.display = "block";
+
+  // Disable object-selection while drawing
+  canvas.forEachObject(function (o) {
+    o.selectable = false;
+    o.evented = false;
+  });
 }
 
 function disableDrawing(canvas) {
   canvas.defaultCursor = "default";
   drawingIndicator.style.display = "none";
+
+  // Enable object-selection
+  canvas.forEachObject(function (o) {
+    if (!o[EXCLUDE_FROM_LAYERS_LIST_KEY]) {
+      o.selectable = true;
+      o.evented = true;
+    }
+  });
 
   canvas.off("mouse:down");
   canvas.off("mouse:move");
@@ -492,7 +506,7 @@ function updateColorSelectorValue(activeObjects) {
   }
 
   // If there's only one unique color, set the selector to that color
-  colorSelector.value = uniqueColors.values().next().value;
+  colorSelector.value = uniqueColors.values().next().value ?? "";
   return;
 }
 
