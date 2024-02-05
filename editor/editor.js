@@ -362,7 +362,10 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     // Add the image to the canvas and render
     canvas.add(
       img.set({
+        selectable: false, // Make it non-selectable
+        evented: false, // Make it non-interactive
         [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+        id: objectId++,
       })
     );
     canvas.renderAll();
