@@ -287,12 +287,7 @@ function adjustCanvasAndAddImage(canvas, file, side) {
   const imageUrl = URL.createObjectURL(file);
 
   fabric.Image.fromURL(imageUrl, function (img) {
-    // Use the helper function to get scaled dimensions
     const scaledSize = calculateImgSizeAndScaleImgToWidth(img);
-
-    // Increase max size because we have more images
-    MAX_IMG_WIDTH *= 2;
-    MAX_IMG_HEIGHT *= 2;
 
     // Determine new canvas dimensions and calculate the shift for existing objects
     let newCanvasWidth = canvas.width;
@@ -300,25 +295,45 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     let shiftX = 0;
     let shiftY = 0;
 
+    // Increase max size because we have more images
+    const doubleMaxHeight = function () {
+      MAX_IMG_HEIGHT *= 2;
+    };
+
+    const doubleMaxWidth = function () {
+      MAX_IMG_WIDTH *= 2;
+    };
+
+    const setNewCanvasHeight = function () {
+      newCanvasHeight += scaledSize.height;
+      newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+    };
+
+    const setNewCanvasWidth = function () {
+      newCanvasWidth += scaledSize.width;
+      newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+      newCanvasHeight = Math.max(newCanvasHeight, scaledSize.width);
+    };
+
     switch (side) {
       case "left":
-        newCanvasWidth += scaledSize.width;
-        newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+        doubleMaxWidth();
+        setNewCanvasWidth();
         shiftX = scaledSize.width; // Shift existing objects to the right
         break;
       case "right":
-        newCanvasWidth += scaledSize.width;
-        newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+        doubleMaxWidth();
+        setNewCanvasWidth();
         // No shift needed; new image goes to the right
         break;
       case "top":
-        newCanvasHeight += scaledSize.height;
-        newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+        doubleMaxHeight();
+        setNewCanvasHeight();
         shiftY = scaledSize.height; // Shift existing objects down
         break;
       case "bottom":
-        newCanvasHeight += scaledSize.height;
-        newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+        doubleMaxHeight();
+        setNewCanvasHeight();
         // No shift needed; new image goes to the bottom
         break;
     }
@@ -340,21 +355,21 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     // Set new image position
     switch (side) {
       case "left":
-        img.set({ left: 0, top: (canvas.height - img.getScaledHeight()) / 2 });
+        img.set({ left: 0, top: 0 });
         break;
       case "right":
         img.set({
           left: canvas.width - scaledSize.width, // Adjusted to use scaledSize.width
-          top: (canvas.height - img.getScaledHeight()) / 2,
+          top: 0,
         });
         break;
       case "top":
-        img.set({ top: 0, left: (canvas.width - img.getScaledWidth()) / 2 });
+        img.set({ top: 0, left: 0 });
         break;
       case "bottom":
         img.set({
           top: canvas.height - scaledSize.height, // Adjusted to use scaledSize.height
-          left: (canvas.width - img.getScaledWidth()) / 2,
+          left: 0,
         });
         break;
     }
