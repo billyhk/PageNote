@@ -274,65 +274,6 @@ function addCroppedImageToCanvas(canvas, img) {
   return scaledSize;
 }
 
-// Add Image
-// function adjustCanvasAndAddImage(canvas, file, side) {
-//   const imageUrl = URL.createObjectURL(file);
-
-//   fabric.Image.fromURL(imageUrl, function (img) {
-//     // Use the helper function to get scaled dimensions
-//     const scaledSize = calculateImgSizeAndScaleImgToWidth(img);
-
-//     // Determine new canvas dimensions
-//     let newCanvasWidth = canvas.width;
-//     let newCanvasHeight = canvas.height;
-
-//     switch (side) {
-//       case "left":
-//       case "right":
-//         newCanvasWidth += scaledSize.width;
-//         newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
-//         break;
-//       case "top":
-//       case "bottom":
-//         newCanvasHeight += scaledSize.height;
-//         newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
-//         break;
-//     }
-
-//     // Update canvas size
-//     canvas.setWidth(newCanvasWidth);
-//     canvas.setHeight(newCanvasHeight);
-
-//     // Position image on the canvas
-//     switch (side) {
-//       case "left":
-//         img.set({ left: 0, top: (canvas.height - img.getScaledHeight()) / 2 });
-//         break;
-//       case "right":
-//         img.set({
-//           left: canvas.width - img.getScaledWidth(),
-//           top: (canvas.height - img.getScaledHeight()) / 2,
-//         });
-//         break;
-//       case "top":
-//         img.set({ top: 0, left: (canvas.width - img.getScaledWidth()) / 2 });
-//         break;
-//       case "bottom":
-//         img.set({
-//           top: canvas.height - img.getScaledHeight(),
-//           left: (canvas.width - img.getScaledWidth()) / 2,
-//         });
-//         break;
-//     }
-
-//     // Add the image to the canvas and render
-//     canvas.add(img);
-//     canvas.renderAll();
-
-//     URL.revokeObjectURL(imageUrl);
-//   });
-// }
-
 function adjustCanvasAndAddImage(canvas, file, side) {
   const imageUrl = URL.createObjectURL(file);
 
