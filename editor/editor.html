@@ -14,6 +14,7 @@
 
       <!-- toolbar header -->
       <div class="toolbar_actions">
+        <!-- Export -->
         <div class="export_controls">
           <input
             type="text"
@@ -23,6 +24,8 @@
           />
           <button id="export-btn">Export</button>
         </div>
+
+        <!-- Shape Selector -->
         <div class="shape-selector_container">
           <select id="shape-selector_menu">
             <option value="arrow">Arrow</option>
@@ -32,12 +35,45 @@
           </select>
           <button id="shape-selector_btn">Add Shape</button>
           <svg id="drawing-enabled-indicator" viewBox="0 0 24 24" fill="none">
+            <title>Drawing Enabled</title>
             <path d="M0 0h24v24H0z" fill="none" />
             <path
               fill="#000000"
               d="M3,17.25V21h3.75L17.81,9.94l-3.75-3.75L3,17.25zM20.71,7.04c0.39-0.39,0.39-1.02,0-1.41l-2.34-2.34 c-0.39-0.39-1.02-0.39-1.41,0l-1.83,1.83l3.75,3.75L20.71,7.04z"
             />
           </svg>
+        </div>
+
+        <!-- Import -->
+        <div>
+          <button id="add-image-btn">Import Image</button>
+        </div>
+
+        <!-- Modal Structure -->
+        <div id="image-placement-modal">
+          <div class="modal-heading">
+            <p>Choose a side for the image:</p>
+            <button id="close-image-placement-modal-btn">&times;</button>
+          </div>
+
+          <!-- Input for selecting an image -->
+          <input type="file" id="image-selector" accept="image/*" />
+
+          <div class="side-selector-buttons-container">
+            <!-- Representations for placing the new image -->
+            <button data-side="top">Top</button>
+            <div>
+              <button data-side="left">Left</button>
+              <button data-side="right">Right</button>
+            </div>
+            <button data-side="bottom">Bottom</button>
+          </div>
+        </div>
+
+        <!-- Undo/Redo -->
+        <div>
+          <button id="undo-btn">Undo</button>
+          <button id="redo-btn">Redo</button>
         </div>
       </div>
     </div>

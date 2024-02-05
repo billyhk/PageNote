@@ -3,7 +3,6 @@ const PROJECT_NAME = "PageNote";
 const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
 const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
-const MAX_IMG_WIDTH = 1100;
 const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
   mt: false, // middle top disable
   mb: false, // middle bottom disable
@@ -18,24 +17,46 @@ const CUSTOM_TYPES = {
 };
 const DEFAULT_COLOR = "red";
 
-// Elements
+// Elements //
+// Shape Selector
 const shapeSelectorMenu = document.getElementById("shape-selector_menu");
 const shapeSelectorButton = document.getElementById("shape-selector_btn");
+
+// Image Selector
+const openAddImageModalButton = document.getElementById("add-image-btn");
+const imagePlacementModal = document.getElementById("image-placement-modal");
+const closeImagePlacementModalButton = document.getElementById(
+  "close-image-placement-modal-btn"
+);
+const imageSelectorFileInput = document.getElementById("image-selector");
+const imagePlacementModalButtons = document.querySelectorAll(
+  "#image-placement-modal button"
+);
+
+// Export
 const exportButton = document.getElementById("export-btn");
 const fileNameInput = document.getElementById("filename-input");
-const layersList = document.getElementById("layers-list");
-const notesInput = document.getElementById("notes-input");
-const drawingIndicator = document.getElementById("drawing-enabled-indicator");
-const colorSelector = document.getElementById("color-selector");
+
+// Side Panels
 const toggleLayersPanelCollapsedBtn =
   document.getElementById("toggle-layers-btn");
 const toggleNotesPanelCollapsedBtn =
   document.getElementById("toggle-notes-btn");
-const layersPanel = document.getElementById("layers-panel");
+
+// Notes
 const notesPanel = document.getElementById("notes-panel");
+const notesInput = document.getElementById("notes-input");
+
+// Layers
+const layersList = document.getElementById("layers-list");
+const drawingIndicator = document.getElementById("drawing-enabled-indicator");
+const layersPanel = document.getElementById("layers-panel");
+const colorSelector = document.getElementById("color-selector");
 
 // Dynamic variables
 let objectId = 0;
+let MAX_IMG_WIDTH = 1100;
+let MAX_IMG_HEIGHT = 1100;
 
 document.addEventListener("DOMContentLoaded", function () {
   var canvas = new fabric.Canvas("c", { selection: true });
@@ -113,6 +134,24 @@ function initializeElementListeners(canvas) {
   drawingIndicator.addEventListener("click", function () {
     toggleDrawingMode(canvas, false);
   });
+
+  openAddImageModalButton.addEventListener("click", openImagePlacementModal);
+
+  imagePlacementModalButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const side = this.getAttribute("data-side");
+      if (imageSelectorFileInput.files.length > 0) {
+        const file = imageSelectorFileInput.files[0];
+        adjustCanvasAndAddImage(canvas, file, side);
+        closeImagePlacementModal();
+      }
+    });
+  });
+
+  closeImagePlacementModalButton.addEventListener(
+    "click",
+    closeImagePlacementModal
+  );
 }
 
 function initializeCanvasListeners(canvas) {
@@ -218,23 +257,7 @@ function addUrlToCanvas(canvas, imgWidth) {
 }
 
 function addCroppedImageToCanvas(canvas, img) {
-  let scaledHeight;
-  let scaledWidth;
-
-  if (img.width > MAX_IMG_WIDTH) {
-    // Preserve Aspect Ratio
-    const aspectRatio = img.height / img.width;
-    scaledWidth = MAX_IMG_WIDTH;
-    scaledHeight = scaledWidth * aspectRatio;
-
-    // Set the image size to the new dimensions
-    img.scaleToWidth(scaledWidth);
-    img.scaleToHeight(scaledHeight);
-  } else {
-    // No scaling needed; use original dimensions
-    scaledHeight = img.height;
-    scaledWidth = img.width;
-  }
+  const scaledSize = calculateImgSizeAndScaleImgToWidth(img);
 
   img.set({
     selectable: false, // Make it non-selectable
@@ -248,7 +271,154 @@ function addCroppedImageToCanvas(canvas, img) {
   canvas.sendToBack(img);
   canvas.renderAll();
 
-  return { height: scaledHeight, width: scaledWidth };
+  return scaledSize;
+}
+
+// Add Image
+// function adjustCanvasAndAddImage(canvas, file, side) {
+//   const imageUrl = URL.createObjectURL(file);
+
+//   fabric.Image.fromURL(imageUrl, function (img) {
+//     // Use the helper function to get scaled dimensions
+//     const scaledSize = calculateImgSizeAndScaleImgToWidth(img);
+
+//     // Determine new canvas dimensions
+//     let newCanvasWidth = canvas.width;
+//     let newCanvasHeight = canvas.height;
+
+//     switch (side) {
+//       case "left":
+//       case "right":
+//         newCanvasWidth += scaledSize.width;
+//         newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+//         break;
+//       case "top":
+//       case "bottom":
+//         newCanvasHeight += scaledSize.height;
+//         newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+//         break;
+//     }
+
+//     // Update canvas size
+//     canvas.setWidth(newCanvasWidth);
+//     canvas.setHeight(newCanvasHeight);
+
+//     // Position image on the canvas
+//     switch (side) {
+//       case "left":
+//         img.set({ left: 0, top: (canvas.height - img.getScaledHeight()) / 2 });
+//         break;
+//       case "right":
+//         img.set({
+//           left: canvas.width - img.getScaledWidth(),
+//           top: (canvas.height - img.getScaledHeight()) / 2,
+//         });
+//         break;
+//       case "top":
+//         img.set({ top: 0, left: (canvas.width - img.getScaledWidth()) / 2 });
+//         break;
+//       case "bottom":
+//         img.set({
+//           top: canvas.height - img.getScaledHeight(),
+//           left: (canvas.width - img.getScaledWidth()) / 2,
+//         });
+//         break;
+//     }
+
+//     // Add the image to the canvas and render
+//     canvas.add(img);
+//     canvas.renderAll();
+
+//     URL.revokeObjectURL(imageUrl);
+//   });
+// }
+
+function adjustCanvasAndAddImage(canvas, file, side) {
+  const imageUrl = URL.createObjectURL(file);
+
+  fabric.Image.fromURL(imageUrl, function (img) {
+    // Use the helper function to get scaled dimensions
+    const scaledSize = calculateImgSizeAndScaleImgToWidth(img);
+
+    // Increase max size because we have more images
+    MAX_IMG_WIDTH *= 2;
+    MAX_IMG_HEIGHT *= 2;
+
+    // Determine new canvas dimensions and calculate the shift for existing objects
+    let newCanvasWidth = canvas.width;
+    let newCanvasHeight = canvas.height;
+    let shiftX = 0;
+    let shiftY = 0;
+
+    switch (side) {
+      case "left":
+        newCanvasWidth += scaledSize.width;
+        newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+        shiftX = scaledSize.width; // Shift existing objects to the right
+        break;
+      case "right":
+        newCanvasWidth += scaledSize.width;
+        newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+        // No shift needed; new image goes to the right
+        break;
+      case "top":
+        newCanvasHeight += scaledSize.height;
+        newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+        shiftY = scaledSize.height; // Shift existing objects down
+        break;
+      case "bottom":
+        newCanvasHeight += scaledSize.height;
+        newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+        // No shift needed; new image goes to the bottom
+        break;
+    }
+
+    // Update canvas size
+    canvas.setWidth(newCanvasWidth);
+    canvas.setHeight(newCanvasHeight);
+
+    // Shift existing canvas objects
+    canvas.forEachObject(function (obj) {
+      obj
+        .set({
+          left: obj.left + shiftX,
+          top: obj.top + shiftY,
+        })
+        .setCoords(); // Update object coordinates after moving
+    });
+
+    // Set new image position
+    switch (side) {
+      case "left":
+        img.set({ left: 0, top: (canvas.height - img.getScaledHeight()) / 2 });
+        break;
+      case "right":
+        img.set({
+          left: canvas.width - scaledSize.width, // Adjusted to use scaledSize.width
+          top: (canvas.height - img.getScaledHeight()) / 2,
+        });
+        break;
+      case "top":
+        img.set({ top: 0, left: (canvas.width - img.getScaledWidth()) / 2 });
+        break;
+      case "bottom":
+        img.set({
+          top: canvas.height - scaledSize.height, // Adjusted to use scaledSize.height
+          left: (canvas.width - img.getScaledWidth()) / 2,
+        });
+        break;
+    }
+
+    // Add the image to the canvas and render
+    canvas.add(
+      img.set({
+        [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
+      })
+    );
+    canvas.renderAll();
+
+    URL.revokeObjectURL(imageUrl);
+  });
 }
 
 // SHAPES
@@ -552,10 +722,50 @@ function updateColorSelectorValue(activeObjects) {
 }
 
 // UTILITY
+function calculateImgSizeAndScaleImgToWidth(img) {
+  const scaledSize = {
+    height: 0,
+    width: 0,
+  };
+
+  const aspectRatio = img.height / img.width;
+  const scaleImgToWidth = function () {
+    // Set the image size to the new dimensions
+    img.scaleToWidth(scaledSize.width);
+    img.scaleToHeight(scaledSize.height);
+  };
+
+  if (img.width > MAX_IMG_WIDTH) {
+    scaledSize.width = MAX_IMG_WIDTH;
+    scaledSize.height = scaledSize.width * aspectRatio;
+    scaleImgToWidth();
+    return scaledSize;
+  }
+
+  if (img.height > MAX_IMG_HEIGHT) {
+    scaledSize.height = MAX_IMG_HEIGHT;
+    scaledSize.width = scaledSize.height * aspectRatio;
+    scaleImgToWidth();
+    return scaledSize;
+  }
+
+  scaledSize.height = img.height;
+  scaledSize.width = img.width;
+  return scaledSize;
+}
 
 function capitalizeFirstLetter(string) {
   if (!string) return string;
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function openImagePlacementModal() {
+  imagePlacementModal.style.display = "flex";
+}
+
+function closeImagePlacementModal() {
+  imageSelectorFileInput.value = "";
+  imagePlacementModal.style.display = "none";
 }
 
 function getFormattedDate(date) {

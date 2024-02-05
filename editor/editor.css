@@ -20,6 +20,24 @@ ul {
   margin: 0;
 }
 
+/* Base Styles for Buttons */
+button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  height: 30px;
+}
+
+button:hover {
+  background-color: #0056b3;
+  outline: none;
+  z-index: 100;
+}
+
 .canvas-container {
   display: flex;
 }
@@ -35,6 +53,13 @@ ul {
   justify-content: start;
   gap: 0.5rem;
   margin-bottom: 1rem;
+
+  max-width: 300px;
+  border-radius: 10px;
+  padding: 10px;
+
+  background: #adadad;
+  box-shadow: inset 50px 50px 17px #939393, inset -50px -50px 17px #c7c7c7;
 }
 
 .shape-selector_container,
@@ -42,6 +67,14 @@ ul {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+#export-btn {
+  background-color: #28a745;
+}
+
+#export-btn:hover {
+  background-color: #218838;
 }
 
 /* Base Styles for Select Inputs */
@@ -79,24 +112,6 @@ select:hover {
   border-color: #bbb;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   outline: none;
-}
-
-/* Base Styles for Buttons */
-button {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  height: 30px;
-}
-
-button:hover {
-  background-color: #0056b3;
-  outline: none;
-  z-index: 100;
 }
 
 /* General Styles for Side Panels */
@@ -145,7 +160,8 @@ aside {
 }
 
 #toggle-layers-btn,
-#toggle-notes-btn {
+#toggle-notes-btn,
+#close-image-placement-modal-btn {
   border: 1px solid #ddd;
   background-color: #eee; /* Soft background color */
   padding: 5px 8px; /* Padding for a smaller, cute look */
@@ -160,7 +176,8 @@ aside {
 }
 
 #toggle-layers-btn:hover,
-#toggle-notes-btn:hover {
+#toggle-notes-btn:hover,
+#close-image-placement-modal-btn:hover {
   transform: scale(
     1.1
   ); /* Slightly enlarge the button on hover for a cute effect */
@@ -170,6 +187,7 @@ aside {
   display: none; /* No change here, but consider adding margin if shown */
   width: 24px;
   height: 24px;
+  cursor: pointer;
 }
 
 /* color selector */
@@ -234,4 +252,100 @@ aside {
 
 #notes-panel.collapsed #notes-input {
   overflow: hidden;
+}
+
+/* Impport */
+#add-image-btn {
+  width: 200px;
+  background-color: #804fb0;
+}
+
+#add-image-btn:hover {
+  background-color: #59377b;
+}
+
+/* Modal background and layout */
+#image-placement-modal {
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+  gap: 1rem;
+
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px; /* Adjust based on your preference */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* Ensure it's above other content */
+
+  /* Initially hidden */
+  display: none;
+}
+
+#image-placement-modal > div {
+  width: 100%;
+}
+
+/* Modal content styling */
+
+/* File input style */
+#image-selector {
+  display: block;
+  padding: 10px;
+  padding-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+/* Adjustments for file input to make it more cohesive with the design */
+#image-selector::file-selector-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+#image-selector:hover::file-selector-button {
+  background-color: #e0e0e0;
+}
+
+.modal-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  font-size: 16px;
+}
+
+.side-selector-buttons-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.side-selector-buttons-container {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+}
+
+.side-selector-buttons-container button {
+  width: 80px;
+}
+
+/* UNDO/REDO */
+#undo-btn {
+  background-color: #dd3131;
+}
+
+#undo-btn:hover {
+  background-color: #7a0000;
 }
