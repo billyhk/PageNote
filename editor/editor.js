@@ -238,7 +238,6 @@ function addUrlToCanvas(canvas, imgWidth) {
       left: padding,
       top: padding,
       fontSize: 14,
-      fontFamily: "Arial",
       fill: "white",
       selectable: false,
       evented: false,
