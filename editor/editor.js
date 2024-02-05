@@ -296,43 +296,47 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     let shiftY = 0;
 
     // Increase max size because we have more images
-    const doubleMaxHeight = function () {
-      MAX_IMG_HEIGHT *= 2;
-    };
 
     const doubleMaxWidth = function () {
       MAX_IMG_WIDTH *= 2;
     };
 
-    const setNewCanvasHeight = function () {
-      newCanvasHeight += scaledSize.height;
-      newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+    const doubleMaxHeight = function () {
+      MAX_IMG_HEIGHT *= 2;
     };
 
     const setNewCanvasWidth = function () {
+      doubleMaxWidth();
       newCanvasWidth += scaledSize.width;
       newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
-      newCanvasHeight = Math.max(newCanvasHeight, scaledSize.width);
+
+      // Expand the height if the new element is taller
+      newCanvasHeight = Math.max(newCanvasHeight, scaledSize.height);
+    };
+
+    const setNewCanvasHeight = function () {
+      doubleMaxHeight();
+      newCanvasHeight += scaledSize.height;
+      newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+
+      // Expand the width if the new element is longer
+      newCanvasWidth = Math.max(newCanvasWidth, scaledSize.width);
     };
 
     switch (side) {
       case "left":
-        doubleMaxWidth();
         setNewCanvasWidth();
         shiftX = scaledSize.width; // Shift existing objects to the right
         break;
       case "right":
-        doubleMaxWidth();
         setNewCanvasWidth();
         // No shift needed; new image goes to the right
         break;
       case "top":
-        doubleMaxHeight();
         setNewCanvasHeight();
         shiftY = scaledSize.height; // Shift existing objects down
         break;
       case "bottom":
-        doubleMaxHeight();
         setNewCanvasHeight();
         // No shift needed; new image goes to the bottom
         break;
