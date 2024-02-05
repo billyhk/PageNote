@@ -1,30 +1,29 @@
 const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
 const SCREENSHOT_IMAGE_STORAGE_KEY = "screenshot";
 
+const img = document.getElementById("screenshot-img");
+const cropButton = document.getElementById("crop-btn");
+const skipButton = document.getElementById("skip-btn");
+
 document.addEventListener("DOMContentLoaded", function () {
   chrome.storage.local.get(SCREENSHOT_IMAGE_STORAGE_KEY, function (data) {
-    const img = document.getElementById("screenshot-img");
     img.src = data[SCREENSHOT_IMAGE_STORAGE_KEY];
 
     const cropper = new Cropper(img, {
-      aspectRatio: NaN, // Free cropping
+      aspectRatio: NaN, // Freesolo cropping
     });
 
-    document.getElementById("crop-btn").addEventListener("click", function () {
+    cropButton.addEventListener("click", function () {
       const croppedCanvas = cropper.getCroppedCanvas();
-
       croppedCanvas.toBlob(function (blob) {
         blobToDataUrl(blob, function (dataUrl) {
-          chrome.storage.local.set(
-            { [CROPPED_IMAGE_STORAGE_KEY]: dataUrl },
-            function () {
-              chrome.tabs.update({
-                url: chrome.runtime.getURL("../editor/editor.html"),
-              });
-            }
-          );
+          navigateToEditorWithImage(dataUrl);
         });
       });
+    });
+
+    skipButton.addEventListener("click", function () {
+      navigateToEditorWithImage(img.src);
     });
   });
 });
@@ -37,8 +36,13 @@ function blobToDataUrl(blob, callback) {
   reader.readAsDataURL(blob);
 }
 
-// TODO: Remove if not needed
-// function cleanupLocalStorage() {
-//   chrome.storage.local.remove(CROPPED_IMAGE_STORAGE_KEY);
-//   chrome.storage.local.remove(SCREENSHOT_IMAGE_STORAGE_KEY);
-// }
+function navigateToEditorWithImage(imageDataUrl) {
+  chrome.storage.local.set(
+    { [CROPPED_IMAGE_STORAGE_KEY]: imageDataUrl },
+    function () {
+      chrome.tabs.update({
+        url: chrome.runtime.getURL("../editor/editor.html"),
+      });
+    }
+  );
+}

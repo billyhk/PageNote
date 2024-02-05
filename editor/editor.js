@@ -245,6 +245,9 @@ function addUrlToCanvas(canvas, imgWidth) {
     border.moveTo(0);
     text.moveTo(1);
 
+    // Adjust canvas height to accommodate the URL banner
+    canvas.setHeight(canvas.height + borderHeight);
+
     // Re-adjust the positions of other objects on the canvas to account for the new header
     canvas.getObjects().forEach(function (obj) {
       if (obj !== border && obj !== text) {

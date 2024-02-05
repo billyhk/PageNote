@@ -1,7 +1,13 @@
-#crop-btn {
+.cropper-actions-container {
   position: fixed;
   top: 20px;
   left: 20px;
+  display: flex;
+  gap: 1rem;
+}
+
+#skip-btn {
+  background: linear-gradient(145deg, #6a6a6a, #8a8a8a);
 }
 
 #screenshot-img {
