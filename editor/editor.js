@@ -701,7 +701,7 @@ function calculateImgSizeAndScaleImgToWidth(img) {
   };
 
   const aspectRatio = img.height / img.width;
-  const scaleImgToWidth = function () {
+  const scaleImage = function () {
     // Set the image size to the new dimensions
     img.scaleToWidth(scaledSize.width);
     img.scaleToHeight(scaledSize.height);
@@ -710,14 +710,14 @@ function calculateImgSizeAndScaleImgToWidth(img) {
   if (img.width > MAX_IMG_WIDTH) {
     scaledSize.width = MAX_IMG_WIDTH;
     scaledSize.height = scaledSize.width * aspectRatio;
-    scaleImgToWidth();
+    scaleImage();
     return scaledSize;
   }
 
   if (img.height > MAX_IMG_HEIGHT) {
     scaledSize.height = MAX_IMG_HEIGHT;
-    scaledSize.width = scaledSize.height * aspectRatio;
-    scaleImgToWidth();
+    scaledSize.width = scaledSize.height / aspectRatio;
+    scaleImage();
     return scaledSize;
   }
 
