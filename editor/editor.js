@@ -53,6 +53,9 @@ const drawingIndicator = document.getElementById("drawing-enabled-indicator");
 const layersPanel = document.getElementById("layers-panel");
 const colorSelector = document.getElementById("color-selector");
 
+// Reset
+const resetButton = document.getElementById("reset-btn");
+
 // Dynamic variables
 let objectId = 0;
 let MAX_IMG_WIDTH = 1100;
@@ -152,6 +155,10 @@ function initializeElementListeners(canvas) {
     "click",
     closeImagePlacementModal
   );
+
+  resetButton.addEventListener("click", function () {
+    window.location.reload();
+  });
 }
 
 function initializeCanvasListeners(canvas) {

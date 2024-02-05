@@ -362,3 +362,13 @@ aside {
 #undo-btn:hover {
   background-color: #7a0000;
 }
+
+/* Reset */
+
+#reset-btn {
+  background-color: #dd3131;
+}
+
+#reset-btn:hover {
+  background-color: #7a0000;
+}
