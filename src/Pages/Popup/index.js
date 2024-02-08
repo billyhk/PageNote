@@ -20,7 +20,7 @@ captureScreenshotBtn.addEventListener("click", () => {
       { [SCREENSHOT_IMAGE_STORAGE_KEY]: dataUrl },
       function () {
         chrome.tabs.create({
-          url: chrome.runtime.getURL("../cropper/cropper.html"),
+          url: chrome.runtime.getURL("../../../src/Pages/Cropper/index.html"),
         });
       }
     );

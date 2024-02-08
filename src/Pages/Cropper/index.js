@@ -41,7 +41,7 @@ function navigateToEditorWithImage(imageDataUrl) {
     { [CROPPED_IMAGE_STORAGE_KEY]: imageDataUrl },
     function () {
       chrome.tabs.update({
-        url: chrome.runtime.getURL("../editor/editor.html"),
+        url: chrome.runtime.getURL("../../../src/Pages/Editor/index.html"),
       });
     }
   );
