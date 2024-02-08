@@ -1,7 +1,10 @@
 // Constants
-const PROJECT_NAME = "PageNote";
-const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
-const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
+import {
+  CROPPED_IMAGE_STORAGE_KEY,
+  PROJECT_NAME,
+  SCREENSHOT_URL_STORAGE_KEY,
+} from "../../Utils/constants.mjs";
+
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
 const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
   mt: false, // middle top disable
