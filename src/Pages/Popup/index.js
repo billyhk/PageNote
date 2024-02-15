@@ -1,5 +1,7 @@
-const SCREENSHOT_IMAGE_STORAGE_KEY = "screenshot";
-const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
+import {
+  SCREENSHOT_IMAGE_STORAGE_KEY,
+  SCREENSHOT_URL_STORAGE_KEY,
+} from "../../Utils/constants.mjs";
 
 const captureScreenshotBtn = document.getElementById("capture-btn");
 
