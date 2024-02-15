@@ -1,7 +1,10 @@
 // Constants
-const PROJECT_NAME = "PageNote";
-const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
-const SCREENSHOT_URL_STORAGE_KEY = "screenshotUrl";
+import {
+  CROPPED_IMAGE_STORAGE_KEY,
+  PROJECT_NAME,
+  SCREENSHOT_URL_STORAGE_KEY,
+} from "../../Utils/constants.mjs";
+
 const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
 const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
   mt: false, // middle top disable
@@ -57,9 +60,9 @@ const colorSelector = document.getElementById("color-selector");
 const resetButton = document.getElementById("reset-btn");
 
 // Dynamic variables
-let objectId = 0;
-let MAX_IMG_WIDTH = 1100;
-let MAX_IMG_HEIGHT = 1100;
+let objectId = 1;
+let maxImageWidth = 1100;
+let maxImageHeight = 1100;
 
 document.addEventListener("DOMContentLoaded", function () {
   var canvas = new fabric.Canvas("c", { selection: true });
@@ -116,7 +119,6 @@ function initializeElementListeners(canvas) {
   });
 
   toggleLayersPanelCollapsedBtn.addEventListener("click", function () {
-    const layersPanel = document.getElementById("layers-panel");
     layersPanel.classList.toggle("collapsed");
 
     this.innerHTML = layersPanel.classList.contains("collapsed")
@@ -170,6 +172,13 @@ function initializeCanvasListeners(canvas) {
     updateLayersList(canvas);
   });
 
+  canvas.on("path:created", function (event) {
+    const path = event.path;
+    path.id = incrementObjectId();
+    path.customType = CUSTOM_TYPES.PATH;
+    updateLayersList(canvas);
+  });
+
   canvas.on("selection:created", function (e) {
     updateColorSelectorVisibility(canvas);
     highlightActiveObjectInLayersList(e.selected);
@@ -219,7 +228,7 @@ function addUrlToCanvas(canvas, imgWidth) {
     var borderHeight = 30;
     var borderWidth = imgWidth ?? canvas.width;
     var border = new fabric.Rect({
-      id: objectId++,
+      id: incrementObjectId(),
       [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
 
       left: 0,
@@ -232,7 +241,7 @@ function addUrlToCanvas(canvas, imgWidth) {
     });
 
     var text = new fabric.Text(url, {
-      id: objectId++,
+      id: incrementObjectId(),
       [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
 
       left: padding,
@@ -272,7 +281,7 @@ function addCroppedImageToCanvas(canvas, img) {
     selectable: false, // Make it non-selectable
     evented: false, // Make it non-interactive
     [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
-    id: objectId++,
+    id: incrementObjectId(),
   });
 
   // Add the image as the bottom-most object (acts as a background)
@@ -298,17 +307,17 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     // Increase max size because we have more images
 
     const doubleMaxWidth = function () {
-      MAX_IMG_WIDTH *= 2;
+      maxImageWidth *= 2;
     };
 
     const doubleMaxHeight = function () {
-      MAX_IMG_HEIGHT *= 2;
+      maxImageHeight *= 2;
     };
 
     const setNewCanvasWidth = function () {
       doubleMaxWidth();
       newCanvasWidth += scaledSize.width;
-      newCanvasWidth = Math.min(newCanvasWidth, MAX_IMG_WIDTH);
+      newCanvasWidth = Math.min(newCanvasWidth, maxImageWidth);
 
       // Expand the height if the new element is taller
       newCanvasHeight = Math.max(newCanvasHeight, scaledSize.height);
@@ -317,7 +326,7 @@ function adjustCanvasAndAddImage(canvas, file, side) {
     const setNewCanvasHeight = function () {
       doubleMaxHeight();
       newCanvasHeight += scaledSize.height;
-      newCanvasHeight = Math.min(newCanvasHeight, MAX_IMG_HEIGHT);
+      newCanvasHeight = Math.min(newCanvasHeight, maxImageHeight);
 
       // Expand the width if the new element is longer
       newCanvasWidth = Math.max(newCanvasWidth, scaledSize.width);
@@ -384,7 +393,7 @@ function adjustCanvasAndAddImage(canvas, file, side) {
         selectable: false, // Make it non-selectable
         evented: false, // Make it non-interactive
         [EXCLUDE_FROM_LAYERS_LIST_KEY]: true,
-        id: objectId++,
+        id: incrementObjectId(),
       })
     );
     canvas.renderAll();
@@ -454,7 +463,7 @@ function enableRectangleDrawing(canvas) {
       fill: "",
       noScaleCache: false,
       strokeUniform: true,
-      id: objectId++,
+      id: incrementObjectId(),
       customType: CUSTOM_TYPES.RECTANGLE,
     });
 
@@ -509,7 +518,7 @@ function addArrowHead(canvas, line) {
 
   // Group the line and arrowhead for easier manipulation
   const group = new fabric.Group([line, arrowHead], {
-    id: objectId++,
+    id: incrementObjectId(),
     fill: DEFAULT_COLOR,
     customType: CUSTOM_TYPES.ARROW,
   });
@@ -563,7 +572,7 @@ function enableArrowDrawing(canvas) {
 
 function addText(canvas) {
   var text = new fabric.IText("Text", {
-    id: objectId++,
+    id: incrementObjectId(),
     left: 50,
     top: 50,
     fontFamily: "Arial",
@@ -591,7 +600,6 @@ function enableDrawing(canvas) {
 
 function disableDrawing(canvas) {
   canvas.isDrawingMode = false;
-
   canvas.defaultCursor = "default";
   drawingIndicator.style.display = "none";
 
@@ -694,6 +702,10 @@ function updateColorSelectorValue(activeObjects) {
 }
 
 // UTILITY
+function incrementObjectId() {
+  return objectId++;
+}
+
 function calculateImgSizeAndScaleImgToWidth(img) {
   const scaledSize = {
     height: 0,
@@ -707,15 +719,15 @@ function calculateImgSizeAndScaleImgToWidth(img) {
     img.scaleToHeight(scaledSize.height);
   };
 
-  if (img.width > MAX_IMG_WIDTH) {
-    scaledSize.width = MAX_IMG_WIDTH;
+  if (img.width > maxImageWidth) {
+    scaledSize.width = maxImageWidth;
     scaledSize.height = scaledSize.width * aspectRatio;
     scaleImage();
     return scaledSize;
   }
 
-  if (img.height > MAX_IMG_HEIGHT) {
-    scaledSize.height = MAX_IMG_HEIGHT;
+  if (img.height > maxImageHeight) {
+    scaledSize.height = maxImageHeight;
     scaledSize.width = scaledSize.height / aspectRatio;
     scaleImage();
     return scaledSize;
@@ -769,7 +781,7 @@ function updateLayersList(canvas) {
   var typeCount = {}; // Object to keep track of counts per type
   layersList.innerHTML = ""; // Initialize list
 
-  canvas.getObjects().forEach(function (obj) {
+  canvas.getObjects().forEach(function (obj, index) {
     var shouldExcludeFromList = obj[EXCLUDE_FROM_LAYERS_LIST_KEY] ?? false;
     if (shouldExcludeFromList) return;
 
@@ -881,7 +893,7 @@ function prepareCanvasForExportWithNotes(canvas, notesText) {
     selectable: false,
     splitByGrapheme: true,
     [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
-    id: objectId++,
+    id: incrementObjectId(),
 
     borderColor: DEFAULT_COLOR,
   });
@@ -895,7 +907,7 @@ function prepareCanvasForExportWithNotes(canvas, notesText) {
     height: canvas.height,
     selectable: false,
     [EXCLUDE_FROM_LAYERS_LIST_KEY]: true, // Exclude from layers list if needed
-    id: objectId++,
+    id: incrementObjectId(),
 
     borderColor: "blue",
     borderWidth: 1,

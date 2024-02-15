@@ -1,5 +1,7 @@
-const CROPPED_IMAGE_STORAGE_KEY = "croppedImage";
-const SCREENSHOT_IMAGE_STORAGE_KEY = "screenshot";
+import {
+  CROPPED_IMAGE_STORAGE_KEY,
+  SCREENSHOT_IMAGE_STORAGE_KEY,
+} from "../../Utils/constants.mjs";
 
 const img = document.getElementById("screenshot-img");
 const cropButton = document.getElementById("crop-btn");
@@ -41,7 +43,7 @@ function navigateToEditorWithImage(imageDataUrl) {
     { [CROPPED_IMAGE_STORAGE_KEY]: imageDataUrl },
     function () {
       chrome.tabs.update({
-        url: chrome.runtime.getURL("../editor/editor.html"),
+        url: chrome.runtime.getURL("../../../src/Pages/Editor/index.html"),
       });
     }
   );
