@@ -1,8 +1,8 @@
 # PageNote
 
-<img align="right" src="images/icon.png" style="width:200px;border-radius:10px">
+<img align="right" src="images/icon.png" style="width:200px">
 
-A web extension for easy screenshot capture, cropping, and web page annotation.
+> A web extension for easy screenshot capture, cropping, and web page annotation.
 
 ---
 
