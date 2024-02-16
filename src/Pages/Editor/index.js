@@ -4,60 +4,32 @@ import {
   PROJECT_NAME,
   SCREENSHOT_URL_STORAGE_KEY,
 } from "../../Utils/constants.mjs";
-
-const EXCLUDE_FROM_LAYERS_LIST_KEY = "excludeFromLayersList";
-const VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT = {
-  mt: false, // middle top disable
-  mb: false, // middle bottom disable
-  ml: false, // middle left disable
-  mr: false, // middle right disable
-};
-const CUSTOM_TYPES = {
-  ARROW: "Arrow",
-  RECTANGLE: "Rectangle",
-  TEXT: "Text",
-  PATH: "Path",
-};
-const DEFAULT_COLOR = "red";
-
-// Elements //
-// Shape Selector
-const shapeSelectorMenu = document.getElementById("shape-selector_menu");
-const shapeSelectorButton = document.getElementById("shape-selector_btn");
-
-// Image Selector
-const openAddImageModalButton = document.getElementById("add-image-btn");
-const imagePlacementModal = document.getElementById("image-placement-modal");
-const closeImagePlacementModalButton = document.getElementById(
-  "close-image-placement-modal-btn"
-);
-const imageSelectorFileInput = document.getElementById("image-selector");
-const imagePlacementModalButtons = document.querySelectorAll(
-  "#image-placement-modal button"
-);
-
-// Export
-const exportButton = document.getElementById("export-btn");
-const fileNameInput = document.getElementById("filename-input");
-
-// Side Panels
-const toggleLayersPanelCollapsedBtn =
-  document.getElementById("toggle-layers-btn");
-const toggleNotesPanelCollapsedBtn =
-  document.getElementById("toggle-notes-btn");
-
-// Notes
-const notesPanel = document.getElementById("notes-panel");
-const notesInput = document.getElementById("notes-input");
-
-// Layers
-const layersList = document.getElementById("layers-list");
-const drawingIndicator = document.getElementById("drawing-enabled-indicator");
-const layersPanel = document.getElementById("layers-panel");
-const colorSelector = document.getElementById("color-selector");
-
-// Reset
-const resetButton = document.getElementById("reset-btn");
+import {
+  CUSTOM_TYPES,
+  DEFAULT_COLOR,
+  EXCLUDE_FROM_LAYERS_LIST_KEY,
+  VISIBILITY_CONTROL_OPTIONS_PRESERVING_ASPECT,
+} from "./constants/canvas.mjs";
+import {
+  closeImagePlacementModalButton,
+  colorSelector,
+  drawingIndicator,
+  exportButton,
+  fileNameInput,
+  imagePlacementModal,
+  imagePlacementModalButtons,
+  imageSelectorFileInput,
+  layersList,
+  layersPanel,
+  notesInput,
+  notesPanel,
+  openAddImageModalButton,
+  resetButton,
+  shapeSelectorButton,
+  shapeSelectorMenu,
+  toggleLayersPanelCollapsedButton,
+  toggleNotesPanelCollapsedButton,
+} from "./constants/elements.mjs";
 
 // Dynamic variables
 let objectId = 1;
@@ -118,7 +90,7 @@ function initializeElementListeners(canvas) {
     createAndTriggerAnchor(dataURL, filename);
   });
 
-  toggleLayersPanelCollapsedBtn.addEventListener("click", function () {
+  toggleLayersPanelCollapsedButton.addEventListener("click", function () {
     layersPanel.classList.toggle("collapsed");
 
     this.innerHTML = layersPanel.classList.contains("collapsed")
@@ -126,7 +98,7 @@ function initializeElementListeners(canvas) {
       : "&#8592;"; // Right arrow for collapsed, left arrow for expanded
   });
 
-  toggleNotesPanelCollapsedBtn.addEventListener("click", function () {
+  toggleNotesPanelCollapsedButton.addEventListener("click", function () {
     notesPanel.classList.toggle("collapsed");
 
     this.innerHTML = notesPanel.classList.contains("collapsed")
